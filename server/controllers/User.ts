@@ -3,6 +3,7 @@ import UserModel from "../models/User";
 import bcrypt from "bcrypt";
 import { env } from "../env";
 import { ControllerReturn } from "../types/ControllerReturn";
+import OTPSender from "../utils/OTPSender";
 
 // User Registration
 export const createUser = async (
@@ -32,9 +33,11 @@ export const createUser = async (
       password: hashedPassword,
     }).save();
 
+    const otp = OTPSender(newUser.email as string, newUser.name as string);
+
     res.status(200).json({
       status: "success",
-      message: "User created",
+      message: "User created, Verification OTP sent",
       body: { id: newUser.id, email: newUser.email },
     } as ControllerReturn);
   } catch (error) {
