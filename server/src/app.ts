@@ -1,16 +1,15 @@
-import dotenv from "dotenv";
-dotenv.config();
 import express from "express";
 import cors, { CorsOptions } from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "../config/dbconnect";
+import { env } from "../env";
 
-const port = process.env.PORT;
+const port = env.PORT;
 
 const app = express();
 
 // enable cors
-const corsWhitelist: string[] = [process.env.FRONTEND_HOST || ""];
+const corsWhitelist: string[] = [env.FRONTEND_HOST];
 const corsOptions: CorsOptions = {
   origin(requestOrigin, callback) {
     if (!requestOrigin || corsWhitelist.indexOf(requestOrigin) == -1) {
@@ -29,7 +28,7 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10mb", type: "application/json" }));
 
 // connect to database
-connectDB(process.env.DB_URL || "");
+connectDB(env.DB_URL);
 
 app.listen(port, () => {
   console.log(`backend running on port : ${port}`);
