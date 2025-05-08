@@ -67,7 +67,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
     }
 
     if (existingUser.is_verified === true) {
-      res.status(400).json({ status: "fail", message: "Already verified" });
+      res.status(200).json({ status: "success", message: "Already verified" });
       return;
     }
 
@@ -75,13 +75,22 @@ export const verifyEmail = async (req: Request, res: Response) => {
       userId: existingUser.id,
       otp,
     });
+
     if (!isVerified) {
       res.status(400).json({ status: "fail", message: "Invalid OTP" });
       return;
     }
 
+    if ((isVerified.expiresAt as Date) < new Date()) {
+      res.status(400).json({
+        status: "fail",
+        message: "OTP Expired, Please resend the OTP",
+      });
+      return;
+    }
+
     existingUser.is_verified = true;
-    existingUser.save();
+    await existingUser.save();
     await VerificationModel.deleteMany({ userId: existingUser.id });
 
     res

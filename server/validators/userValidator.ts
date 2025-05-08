@@ -50,3 +50,26 @@ export const validateUser = [
   // .matches(/[@$!%*?&#^()_\-+=]/)
   // .withMessage("Password must contain at least one special character"),
 ];
+
+export const validateEmailVerification = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Please provide your email address")
+    .bail()
+    .isEmail()
+    .withMessage("Invalid email address")
+    .bail()
+    .normalizeEmail(),
+
+  body("otp")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter OTP")
+    .bail()
+    .isLength({ min: 4, max: 4 })
+    .withMessage("OTP must be exactly 4 digits")
+    .bail()
+    .isNumeric()
+    .withMessage("OTP must contain only numbers"),
+];
