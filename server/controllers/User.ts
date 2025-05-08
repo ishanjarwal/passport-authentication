@@ -105,6 +105,44 @@ export const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
+// resend otp
+export const resendOTP = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const existingUser = await UserModel.findOne({ email });
+    if (!existingUser) {
+      res.status(400).json({ status: "fail", message: "No users found" });
+      return;
+    }
+
+    if (existingUser.is_verified) {
+      res.status(200).json({ status: "success", message: "Already verified" });
+      return;
+    }
+
+    const isVerified = await VerificationModel.findOne({
+      userId: existingUser.id,
+    });
+    if (
+      !isVerified ||
+      (isVerified.createdAt as Date) < new Date(Date.now() - 2 * 60 * 1000)
+    ) {
+      await VerificationModel.deleteMany({ userId: existingUser.id });
+      const otp = await OTPSender(
+        existingUser.email as string,
+        existingUser.name as string
+      );
+      await new VerificationModel({ userId: existingUser.id, otp }).save();
+      res.status(200).json({ status: "success", message: "OTP resent" });
+      return;
+    }
+    res.status(400).json({ status: "fail", message: "Resend after 2 minutes" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "error", message: "Something went wrong" });
+  }
+};
+
 // User Login
 
 // Get new access/refresh token

@@ -73,3 +73,15 @@ export const validateEmailVerification = [
     .isNumeric()
     .withMessage("OTP must contain only numbers"),
 ];
+
+export const validateEmail = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Please provide your email address")
+    .bail()
+    .isEmail()
+    .withMessage("Invalid email address")
+    .bail()
+    .normalizeEmail(),
+];

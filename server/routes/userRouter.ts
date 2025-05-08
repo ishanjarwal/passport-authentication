@@ -1,6 +1,7 @@
 import express from "express";
-import { createUser, verifyEmail } from "../controllers/User";
+import { createUser, resendOTP, verifyEmail } from "../controllers/User";
 import {
+  validateEmail,
   validateEmailVerification,
   validateUser,
 } from "../validators/userValidator";
@@ -14,6 +15,7 @@ userRouter
     validateEmailVerification,
     handleValidation,
     verifyEmail
-  );
+  )
+  .post("/resend-otp", validateEmail, handleValidation, resendOTP);
 
 export default userRouter;
