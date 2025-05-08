@@ -50,12 +50,51 @@ export const createUser = async (
     console.log(error);
     res.status(500).json({
       status: "error",
-      message: "Something went",
+      message: "Something went wrong",
     } as ControllerReturn);
   }
 };
 
 // User Email verification
+export const verifyEmail = async (req: Request, res: Response) => {
+  try {
+    const { email, otp } = req.body;
+
+    const existingUser = await UserModel.findOne({ email });
+    if (!existingUser) {
+      res.status(400).json({ status: "fail", message: "No user found" });
+      return;
+    }
+
+    if (existingUser.is_verified === true) {
+      res.status(400).json({ status: "fail", message: "Already verified" });
+      return;
+    }
+
+    const isVerified = await VerificationModel.findOne({
+      userId: existingUser.id,
+      otp,
+    });
+    if (!isVerified) {
+      res.status(400).json({ status: "fail", message: "Invalid OTP" });
+      return;
+    }
+
+    existingUser.is_verified = true;
+    existingUser.save();
+    await VerificationModel.deleteMany({ userId: existingUser.id });
+
+    res
+      .status(200)
+      .json({ status: "success", message: "Account verified successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: "error",
+      message: "Something went wrong",
+    } as ControllerReturn);
+  }
+};
 
 // User Login
 
