@@ -2,7 +2,7 @@ import transporter from "../config/emailTransporter";
 import { env } from "../env";
 
 const OTPSender = async (email: string, name: string) => {
-  const otp = Math.floor(1000 * Math.random() * 9000);
+  const otp = Math.floor(1000 + Math.random() * 9999);
   const frontendRedirector = env.FRONTEND_HOST + "/account/verify-email";
   console.log(transporter.options);
   await transporter.sendMail({
@@ -25,7 +25,7 @@ const otpEmailTemplate = (
  <head>
    <meta charset="UTF-8" />
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>OTP Verification</title>
+   <title>Verify your account</title>
    <style>
      body {
        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -76,7 +76,7 @@ const otpEmailTemplate = (
  <body>
    <div class="container">
      <h2>Email Verification</h2>
-     <p>Hi ${name},</p>
+     <p>👋 Hi ${name},</p>
      <p>Use the following One-Time Password (OTP) to complete your verification:</p>
      <div class="otp">${otp}</div>
      <p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
