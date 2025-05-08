@@ -4,7 +4,6 @@ import { env } from "../env";
 const OTPSender = async (email: string, name: string) => {
   const otp = Math.floor(1000 + Math.random() * 9999);
   const frontendRedirector = env.FRONTEND_HOST + "/account/verify-email";
-  console.log(transporter.options);
   await transporter.sendMail({
     from: env.EMAIL_FROM,
     to: email,

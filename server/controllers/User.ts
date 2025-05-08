@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { env } from "../env";
 import { ControllerReturn } from "../types/ControllerReturn";
 import OTPSender from "../utils/OTPSender";
+import VerificationModel from "../models/Verification";
 
 // User Registration
 export const createUser = async (
@@ -33,7 +34,12 @@ export const createUser = async (
       password: hashedPassword,
     }).save();
 
-    const otp = OTPSender(newUser.email as string, newUser.name as string);
+    const otp = await OTPSender(
+      newUser.email as string,
+      newUser.name as string
+    );
+
+    await new VerificationModel({ userId: newUser.id, otp }).save();
 
     res.status(200).json({
       status: "success",
