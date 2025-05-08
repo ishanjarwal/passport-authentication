@@ -3,6 +3,7 @@ dotenv.config();
 import express from "express";
 import cors, { CorsOptions } from "cors";
 import cookieParser from "cookie-parser";
+import connectDB from "../config/dbconnect";
 
 const port = process.env.PORT;
 
@@ -23,9 +24,12 @@ const corsOptions: CorsOptions = {
 };
 app.use(cors(corsOptions));
 
-// enable cookie parser and json support
+// enable cookie parser and express.json support (replacement for body-parser)
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb", type: "application/json" }));
+
+// connect to database
+connectDB(process.env.DB_URL || "");
 
 app.listen(port, () => {
   console.log(`backend running on port : ${port}`);
