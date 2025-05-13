@@ -38,6 +38,9 @@ export const validateUser = [
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long")
     .bail()
+    .isLength({ max: 50 })
+    .withMessage("Password must be atmost 50 characters long")
+    .bail()
     .matches(/[A-Z]/)
     .withMessage("Password must contain at least one uppercase letter")
     .bail()
@@ -84,4 +87,28 @@ export const validateEmail = [
     .withMessage("Invalid email address")
     .bail()
     .normalizeEmail(),
+];
+
+export const validateLogin = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Please provide your email address")
+    .bail()
+    .isEmail()
+    .withMessage("Invalid email address")
+    .bail()
+    .normalizeEmail(),
+
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter your password")
+    .bail()
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long")
+    .bail()
+    .isLength({ max: 50 })
+    .withMessage("Password must be atmost 50 characters long")
+    .bail(),
 ];

@@ -5,6 +5,7 @@ import { env } from "../env";
 import { ControllerReturn } from "../types/ControllerReturn";
 import OTPSender from "../utils/OTPSender";
 import VerificationModel from "../models/Verification";
+import { Document } from "mongoose";
 
 // User Registration
 export const createUser = async (
@@ -144,6 +145,37 @@ export const resendOTP = async (req: Request, res: Response) => {
 };
 
 // User Login
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const existing = await UserModel.findOne({ email });
+    if (!existing) {
+      res
+        .status(400)
+        .json({ status: "fail", message: "invalid email or password" });
+      return;
+    }
+    const enc_password = await bcrypt.compare(
+      password,
+      existing.password as string
+    );
+    if (!enc_password) {
+      res
+        .status(400)
+        .json({ status: "fail", message: "invalid email or password" });
+      return;
+    }
+
+    // generate tokens and store it in db
+
+    res
+      .status(200)
+      .json({ status: "success", message: "logged in successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "error", message: "Something went wrong" });
+  }
+};
 
 // Get new access/refresh token
 
