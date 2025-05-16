@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt, { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
 import { env } from "../env";
 import RefreshTokenModel from "../models/RefreshToken";
 
@@ -13,8 +13,11 @@ const verifyRefreshToken = async (token: string): Promise<JwtPayload> => {
     // Verify the refresh token and return the paylod
     const tokenDetails = jwt.verify(token, env.JWT_REFRESH_TOKEN_SECRET);
     return tokenDetails as JwtPayload;
-  } catch (error) {
-    throw new Error("unauthorized access : refresh token couldn't be verified");
+  } catch (error: Error | JsonWebTokenError | any) {
+    if (error instanceof JsonWebTokenError) {
+      throw new Error("unauthorized access, couldn't verify token");
+    }
+    throw new Error(error.message);
   }
 };
 
