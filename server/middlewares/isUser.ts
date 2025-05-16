@@ -13,6 +13,7 @@ const isUser = async (req: Request, res: Response, next: NextFunction) => {
       res.status(400).json({ status: "fail", message: "unauthorized" });
       return;
     }
+    req.body.user = existing;
     next();
   } catch (error) {
     console.log(error);

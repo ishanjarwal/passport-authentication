@@ -1,4 +1,14 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
+
+export type UserValues = Document & {
+  _id: string;
+  name: string;
+  email: string;
+  password: string;
+  is_verified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 const userSchema: Schema = new mongoose.Schema(
   {
@@ -10,5 +20,5 @@ const userSchema: Schema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const UserModel = mongoose.model("user", userSchema);
+const UserModel = mongoose.model<UserValues>("user", userSchema);
 export default UserModel;

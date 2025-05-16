@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import connectDB from "../config/dbconnect";
 import { env } from "../env";
 import userRouter from "../routes/userRouter";
+import passport from "passport";
+import "../config/passport-strategy";
 
 const port = env.PORT;
 
@@ -30,6 +32,9 @@ app.use(express.json({ limit: "10mb", type: "application/json" }));
 
 // connect to database
 connectDB(env.DB_URL);
+
+// initialize passport
+app.use(passport.initialize());
 
 // user routes
 app.use("/api/v1/user", userRouter);

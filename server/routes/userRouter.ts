@@ -3,6 +3,7 @@ import {
   createUser,
   loginUser,
   resendOTP,
+  userProfile,
   verifyEmail,
 } from "../controllers/User";
 import {
@@ -12,8 +13,9 @@ import {
   validateUser,
 } from "../validators/userValidator";
 import { handleValidation } from "../middlewares/validationHandler";
-import isUser from "../middlewares/isUser";
-import isVerifiedUser from "../middlewares/isVerifiedUser";
+import accessTokenAutoRefresh from "../middlewares/accessTokenAutoRefresh";
+import passport from "passport";
+
 const userRouter = express.Router();
 
 userRouter
@@ -26,5 +28,13 @@ userRouter
   )
   .post("/resend-otp", validateEmail, handleValidation, resendOTP)
   .post("/login", validateLogin, handleValidation, loginUser);
+
+// protected routes
+userRouter.get(
+  "/me",
+  accessTokenAutoRefresh,
+  passport.authenticate("jwt", { session: false }),
+  userProfile
+);
 
 export default userRouter;

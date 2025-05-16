@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
-import UserModel from "../models/User";
+import UserModel, { UserValues } from "../models/User";
 import bcrypt from "bcrypt";
 import { env } from "../env";
 import { ControllerReturn } from "../types/ControllerReturn";
 import OTPSender from "../utils/OTPSender";
 import VerificationModel from "../models/Verification";
 import { Document } from "mongoose";
+import generateTokens from "../utils/generateTokens";
+import RefreshTokenModel from "../models/RefreshToken";
+import setAuthCookies from "../utils/setAuthCookies";
 
 // User Registration
 export const createUser = async (
@@ -148,32 +151,60 @@ export const resendOTP = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    const existing = await UserModel.findOne({ email });
+    const existing: UserValues | null = await UserModel.findOne({ email });
     if (!existing) {
       res
         .status(400)
         .json({ status: "fail", message: "invalid email or password" });
       return;
     }
-    const enc_password = await bcrypt.compare(
-      password,
-      existing.password as string
-    );
+    const enc_password = await bcrypt.compare(password, existing.password);
     if (!enc_password) {
       res
         .status(400)
         .json({ status: "fail", message: "invalid email or password" });
       return;
     }
+    if (!existing.is_verified) {
+      res
+        .status(400)
+        .json({ status: "fail", message: "please verify your account" });
+      return;
+    }
+
+    // remove existing refresh token if any
+    const existingRefreshToken = await RefreshTokenModel.findOne({
+      userId: existing.id,
+    });
+    if (existingRefreshToken) await existingRefreshToken.deleteOne();
 
     // generate tokens and store it in db
+    const { accessToken, accessTokenExpiry, refreshToken, refreshTokenExpiry } =
+      await generateTokens(existing);
 
-    res
-      .status(200)
-      .json({ status: "success", message: "logged in successfully" });
+    // save the new refresh token
+    const newRefreshToken = new RefreshTokenModel({
+      userId: existing.id,
+      token: refreshToken,
+    });
+    await newRefreshToken.save();
+
+    // set the cookies
+    setAuthCookies(res, {
+      accessToken,
+      refreshToken,
+      accessTokenExpiry,
+      refreshTokenExpiry,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "logged in successfully",
+      body: { id: existing.id, name: existing.name },
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: "error", message: "Something went wrong" });
+    res.status(500).json({ status: "error", message: "Somet hing went wrong" });
   }
 };
 
@@ -183,6 +214,21 @@ export const loginUser = async (req: Request, res: Response) => {
 
 // password reset email
 
-// get User
+// get User (used with a middleware always)
+export const userProfile = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      throw new Error("something went wrong");
+    }
+    res.status(200).json({
+      status: "success",
+      message: "user details fetched",
+      body: req.user,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "error", message: "something went wrong" });
+  }
+};
 
 // Logout
