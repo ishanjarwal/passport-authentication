@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  changeUserPassword,
   createUser,
   loginUser,
   logoutUser,
@@ -11,11 +12,13 @@ import {
   validateEmail,
   validateEmailVerification,
   validateLogin,
+  validatePasswordChange,
   validateUser,
 } from "../validators/userValidator";
 import { handleValidation } from "../middlewares/validationHandler";
 import accessTokenAutoRefresh from "../middlewares/accessTokenAutoRefresh";
 import passport from "passport";
+import passportAuthenticate from "../middlewares/passportAuthenticate";
 
 const userRouter = express.Router();
 
@@ -32,17 +35,15 @@ userRouter
 
 // protected routes
 userRouter
-  .get(
-    "/me",
+  .get("/me", accessTokenAutoRefresh, passportAuthenticate, userProfile)
+  .get("/logout", accessTokenAutoRefresh, passportAuthenticate, logoutUser)
+  .post(
+    "/change-password",
     accessTokenAutoRefresh,
-    passport.authenticate("jwt", { session: false }),
-    userProfile
-  )
-  .get(
-    "/logout",
-    accessTokenAutoRefresh,
-    passport.authenticate("jwt", { session: false }),
-    logoutUser
+    passportAuthenticate,
+    validatePasswordChange,
+    handleValidation,
+    changeUserPassword
   );
 
 export default userRouter;

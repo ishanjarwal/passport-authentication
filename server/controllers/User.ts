@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import UserModel, { UserValues } from "../models/User";
 import bcrypt from "bcrypt";
 import { env } from "../env";
-import { ControllerReturn } from "../types/ControllerReturn";
+import { ControllerReturn } from "../@types/ControllerReturn";
 import OTPSender from "../utils/OTPSender";
 import VerificationModel from "../models/Verification";
 import { Document } from "mongoose";
@@ -182,13 +182,6 @@ export const loginUser = async (req: Request, res: Response) => {
     const { accessToken, accessTokenExpiry, refreshToken, refreshTokenExpiry } =
       await generateTokens(existing);
 
-    // save the new refresh token
-    const newRefreshToken = new RefreshTokenModel({
-      userId: existing.id,
-      token: refreshToken,
-    });
-    await newRefreshToken.save();
-
     // set the cookies
     setAuthCookies(res, {
       accessToken,
@@ -208,22 +201,56 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-// Get new access/refresh token
-
 // Change password
+export const changeUserPassword = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as UserValues;
+    if (!user) {
+      throw new Error();
+    }
+    const { password } = req.body;
+    const salt = await bcrypt.genSalt(env.SALT_ROUNDS);
+    const newPasswordHash = await bcrypt.hash(password, salt);
+    await UserModel.findByIdAndUpdate(user.id, {
+      $set: { password: newPasswordHash },
+    });
+    res.status(200).json({ status: "success", message: "password updated" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "error", message: "Somet hing went wrong" });
+  }
+};
 
 // password reset email
+export const sendPasswordResetEmail = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as UserValues;
+    if (!user) {
+      throw new Error();
+    }
+    const userEmail = user.email;
+
+    res.status(200).json({
+      status: "success",
+      message: "reset password link sent to registered email",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "error", message: "Something went wrong" });
+  }
+};
 
 // get User (used with a middleware always)
 export const userProfile = async (req: Request, res: Response) => {
   try {
-    if (!req.user) {
+    const user = req.user as UserValues;
+    if (!user) {
       throw new Error("something went wrong");
     }
     res.status(200).json({
       status: "success",
       message: "user details fetched",
-      body: req.user,
+      body: user,
     });
   } catch (error) {
     console.log(error);

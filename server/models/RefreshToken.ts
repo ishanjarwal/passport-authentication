@@ -17,5 +17,8 @@ const refreshTokenSchema = new mongoose.Schema(
   { timestamps: true, expires: "7d" }
 );
 
-const RefreshTokenModel = mongoose.model("refresh_token", refreshTokenSchema);
+const RefreshTokenModel = mongoose.model<RefreshTokenValues>(
+  "refresh_token",
+  refreshTokenSchema
+);
 export default RefreshTokenModel;

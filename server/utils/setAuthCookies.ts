@@ -9,9 +9,9 @@ const setAuthCookies = (res: Response, tokens: TokenValues) => {
     refreshTokenExpiry: newRefreshTokenExp,
   } = tokens;
   const accessTokenMaxAge =
-    (newAccessTokenExp - Math.floor(Date.now() / 1000)) * 1000;
+    (newAccessTokenExp - Math.floor(Date.now() / 1000)) * 1000; // in ms
   const refreshTokenmaxAge =
-    (newRefreshTokenExp - Math.floor(Date.now() / 1000)) * 1000;
+    (newRefreshTokenExp - Math.floor(Date.now() / 1000)) * 1000; // in ms
 
   res.cookie("accessToken", newAccessToken, {
     httpOnly: true,

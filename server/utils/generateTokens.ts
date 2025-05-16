@@ -2,6 +2,7 @@ import { Document } from "mongoose";
 import { env } from "../env";
 import { UserValues } from "../models/User";
 import jwt from "jsonwebtoken";
+import RefreshTokenModel from "../models/RefreshToken";
 
 export interface TokenValues {
   accessToken: string;
@@ -31,6 +32,14 @@ const generateTokens = async (user: UserValues): Promise<TokenValues> => {
       env.JWT_REFRESH_TOKEN_SECRET
       //   { expiresIn: "7d" }
     );
+
+    // remove the exising refreshtoken in db and add new one
+    await RefreshTokenModel.deleteMany({ userId: user.id });
+    await new RefreshTokenModel({
+      userId: user.id,
+      token: refreshToken,
+    }).save();
+
     return { accessToken, accessTokenExpiry, refreshToken, refreshTokenExpiry };
   } catch (error) {
     throw error;

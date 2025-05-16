@@ -112,3 +112,29 @@ export const validateLogin = [
     .withMessage("Password must be atmost 50 characters long")
     .bail(),
 ];
+
+export const validatePasswordChange = [
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter your password")
+    .bail()
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long")
+    .bail()
+    .isLength({ max: 50 })
+    .withMessage("Password must be atmost 50 characters long")
+    .bail(),
+
+  body("password_confirmation")
+    .trim()
+    .notEmpty()
+    .withMessage("Please confirm the password")
+    .bail()
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error("Password confirmation does not match password");
+      }
+      return true;
+    }),
+];
