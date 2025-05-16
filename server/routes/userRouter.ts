@@ -2,6 +2,7 @@ import express from "express";
 import {
   createUser,
   loginUser,
+  logoutUser,
   resendOTP,
   userProfile,
   verifyEmail,
@@ -30,11 +31,18 @@ userRouter
   .post("/login", validateLogin, handleValidation, loginUser);
 
 // protected routes
-userRouter.get(
-  "/me",
-  accessTokenAutoRefresh,
-  passport.authenticate("jwt", { session: false }),
-  userProfile
-);
+userRouter
+  .get(
+    "/me",
+    accessTokenAutoRefresh,
+    passport.authenticate("jwt", { session: false }),
+    userProfile
+  )
+  .get(
+    "/logout",
+    accessTokenAutoRefresh,
+    passport.authenticate("jwt", { session: false }),
+    logoutUser
+  );
 
 export default userRouter;

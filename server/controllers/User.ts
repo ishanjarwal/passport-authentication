@@ -232,3 +232,15 @@ export const userProfile = async (req: Request, res: Response) => {
 };
 
 // Logout
+export const logoutUser = async (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    await RefreshTokenModel.deleteMany({ token: refreshToken });
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.status(200).json({ status: "success", message: "logged out" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "error", message: "something went wrong" });
+  }
+};
