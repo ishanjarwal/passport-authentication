@@ -138,3 +138,19 @@ export const validatePasswordChange = [
       return true;
     }),
 ];
+
+export const validateUpdateUser = [
+  body("name")
+    .optional()
+    .trim()
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("Name must contain only letters and spaces")
+    .bail()
+    .custom((value) => {
+      const spaceCount = (value.match(/\s/g) || []).length;
+      if (spaceCount > 2) {
+        throw new Error("Name must contain at most two spaces");
+      }
+      return true;
+    }),
+];

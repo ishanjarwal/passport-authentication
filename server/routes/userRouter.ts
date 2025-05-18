@@ -5,6 +5,9 @@ import {
   loginUser,
   logoutUser,
   resendOTP,
+  resetPassword,
+  sendPasswordResetEmail,
+  updateUser,
   userProfile,
   verifyEmail,
 } from "../controllers/User";
@@ -13,37 +16,93 @@ import {
   validateEmailVerification,
   validateLogin,
   validatePasswordChange,
+  validateUpdateUser,
   validateUser,
 } from "../validators/userValidator";
 import { handleValidation } from "../middlewares/validationHandler";
 import accessTokenAutoRefresh from "../middlewares/accessTokenAutoRefresh";
-import passport from "passport";
 import passportAuthenticate from "../middlewares/passportAuthenticate";
+import { rateLimiter } from "../middlewares/rateLimiter";
 
 const userRouter = express.Router();
 
 userRouter
-  .post("/", validateUser, handleValidation, createUser)
+  .post(
+    "/",
+    rateLimiter(1 * 60 * 1000, 2, "Please try again after some time"),
+    validateUser,
+    handleValidation,
+    createUser
+  )
   .post(
     "/verify-email",
+    rateLimiter(1 * 60 * 1000, 2, "Please try again after some time"),
     validateEmailVerification,
     handleValidation,
     verifyEmail
   )
-  .post("/resend-otp", validateEmail, handleValidation, resendOTP)
-  .post("/login", validateLogin, handleValidation, loginUser);
+  .post(
+    "/resend-otp",
+    rateLimiter(2 * 60 * 1000, 1, "Try again in 2 minutes"),
+    validateEmail,
+    handleValidation,
+    resendOTP
+  )
+  .post(
+    "/login",
+    rateLimiter(10 * 60 * 1000, 5, "Too many requests"),
+    validateLogin,
+    handleValidation,
+    loginUser
+  )
+  .post(
+    "/reset-password",
+    rateLimiter(2 * 60 * 1000, 1, "Try again in 2 minutes"),
+    validateEmail,
+    handleValidation,
+    sendPasswordResetEmail
+  )
+  .post(
+    "/reset-password/:token",
+    rateLimiter(5 * 60 * 1000, 1, "Please try again after some time"),
+    validatePasswordChange,
+    handleValidation,
+    resetPassword
+  );
 
 // protected routes
 userRouter
-  .get("/me", accessTokenAutoRefresh, passportAuthenticate, userProfile)
-  .get("/logout", accessTokenAutoRefresh, passportAuthenticate, logoutUser)
+  .get(
+    "/me",
+    rateLimiter(1 * 60 * 1000, 15, "Please try again later"),
+    accessTokenAutoRefresh,
+    passportAuthenticate,
+    userProfile
+  )
+  .get(
+    "/logout",
+    rateLimiter(2 * 60 * 1000, 1, "Please try again later"),
+    accessTokenAutoRefresh,
+    passportAuthenticate,
+    logoutUser
+  )
   .post(
     "/change-password",
+    rateLimiter(10 * 60 * 1000, 1, "Please try again in 10 minutes"),
     accessTokenAutoRefresh,
     passportAuthenticate,
     validatePasswordChange,
     handleValidation,
     changeUserPassword
+  )
+  .put(
+    "/",
+    rateLimiter(1 * 60 * 1000, 1, "Please try again later"),
+    accessTokenAutoRefresh,
+    passportAuthenticate,
+    validateUpdateUser,
+    handleValidation,
+    updateUser
   );
 
 export default userRouter;

@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-export type UserValues = Document & {
+export interface UserValues extends Document {
   _id: string;
   name: string;
   email: string;
@@ -8,7 +8,7 @@ export type UserValues = Document & {
   is_verified: boolean;
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
 const userSchema: Schema = new mongoose.Schema(
   {

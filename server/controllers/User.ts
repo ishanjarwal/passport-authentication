@@ -2,19 +2,18 @@ import { Request, Response } from "express";
 import UserModel, { UserValues } from "../models/User";
 import bcrypt from "bcrypt";
 import { env } from "../env";
-import { ControllerReturn } from "../@types/ControllerReturn";
 import OTPSender from "../utils/OTPSender";
 import VerificationModel from "../models/Verification";
-import { Document } from "mongoose";
+import mongoose from "mongoose";
 import generateTokens from "../utils/generateTokens";
 import RefreshTokenModel from "../models/RefreshToken";
 import setAuthCookies from "../utils/setAuthCookies";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { PasswordResetToken } from "../models/PasswordResetToken";
+import passwordResetMailSender from "../utils/passwordResetMailSender";
 
 // User Registration
-export const createUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const createUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
 
@@ -23,13 +22,13 @@ export const createUser = async (
     if (check) {
       res.status(400).json({
         status: "fail",
-        message: "User already exists",
-      } as ControllerReturn);
+        message: "user already exists, try signing in",
+      });
       return;
     }
 
     // hash password and generate new user
-    const salt = await bcrypt.genSalt(Number(env.SALT_ROUNDS));
+    const salt = await bcrypt.genSalt(Number(Number(env.SALT_ROUNDS)));
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = await new UserModel({
@@ -43,19 +42,19 @@ export const createUser = async (
       newUser.name as string
     );
 
-    await new VerificationModel({ userId: newUser.id, otp }).save();
+    await new VerificationModel({ userId: newUser._id, otp }).save();
 
     res.status(200).json({
       status: "success",
       message: "User created, Verification OTP sent",
-      body: { id: newUser.id, email: newUser.email },
-    } as ControllerReturn);
+      body: { id: newUser._id, email: newUser.email },
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       status: "error",
-      message: "Something went wrong",
-    } as ControllerReturn);
+      message: "something went wrong",
+    });
   }
 };
 
@@ -76,7 +75,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
     }
 
     const isVerified = await VerificationModel.findOne({
-      userId: existingUser.id,
+      userId: existingUser._id,
       otp,
     });
 
@@ -95,7 +94,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
 
     existingUser.is_verified = true;
     await existingUser.save();
-    await VerificationModel.deleteMany({ userId: existingUser.id });
+    await VerificationModel.deleteMany({ userId: existingUser._id });
 
     res
       .status(200)
@@ -104,8 +103,8 @@ export const verifyEmail = async (req: Request, res: Response) => {
     console.log(error);
     res.status(500).json({
       status: "error",
-      message: "Something went wrong",
-    } as ControllerReturn);
+      message: "something went wrong",
+    });
   }
 };
 
@@ -125,25 +124,25 @@ export const resendOTP = async (req: Request, res: Response) => {
     }
 
     const isVerified = await VerificationModel.findOne({
-      userId: existingUser.id,
+      userId: existingUser._id,
     });
     if (
       !isVerified ||
       (isVerified.createdAt as Date) < new Date(Date.now() - 2 * 60 * 1000)
     ) {
-      await VerificationModel.deleteMany({ userId: existingUser.id });
+      await VerificationModel.deleteMany({ userId: existingUser._id });
       const otp = await OTPSender(
         existingUser.email as string,
         existingUser.name as string
       );
-      await new VerificationModel({ userId: existingUser.id, otp }).save();
+      await new VerificationModel({ userId: existingUser._id, otp }).save();
       res.status(200).json({ status: "success", message: "OTP resent" });
       return;
     }
     res.status(400).json({ status: "fail", message: "Resend after 2 minutes" });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: "error", message: "Something went wrong" });
+    res.status(500).json({ status: "error", message: "something went wrong" });
   }
 };
 
@@ -174,7 +173,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
     // remove existing refresh token if any
     const existingRefreshToken = await RefreshTokenModel.findOne({
-      userId: existing.id,
+      userId: existing._id,
     });
     if (existingRefreshToken) await existingRefreshToken.deleteOne();
 
@@ -193,11 +192,11 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(200).json({
       status: "success",
       message: "logged in successfully",
-      body: { id: existing.id, name: existing.name },
+      body: { id: existing._id, name: existing.name },
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: "error", message: "Somet hing went wrong" });
+    res.status(500).json({ status: "error", message: "something went wrong" });
   }
 };
 
@@ -209,9 +208,9 @@ export const changeUserPassword = async (req: Request, res: Response) => {
       throw new Error();
     }
     const { password } = req.body;
-    const salt = await bcrypt.genSalt(env.SALT_ROUNDS);
+    const salt = await bcrypt.genSalt(Number(env.SALT_ROUNDS));
     const newPasswordHash = await bcrypt.hash(password, salt);
-    await UserModel.findByIdAndUpdate(user.id, {
+    await UserModel.findByIdAndUpdate(user._id, {
       $set: { password: newPasswordHash },
     });
     res.status(200).json({ status: "success", message: "password updated" });
@@ -224,19 +223,122 @@ export const changeUserPassword = async (req: Request, res: Response) => {
 // password reset email
 export const sendPasswordResetEmail = async (req: Request, res: Response) => {
   try {
-    const user = req.user as UserValues;
+    const { email } = req.body;
+
+    const user = await UserModel.findOne({ email });
     if (!user) {
-      throw new Error();
+      res
+        .status(400)
+        .json({ status: "fail", message: "No user found with this email" });
+      return;
     }
-    const userEmail = user.email;
+
+    const existingToken = await PasswordResetToken.findOne({
+      userId: user._id,
+    });
+
+    if (existingToken) {
+      const createdAt = existingToken.createdAt.getTime();
+      const now = Date.now();
+      // Prevent if less than 2 minutes have passed since last request
+      if (now - createdAt < 2 * 60 * 1000) {
+        res.status(400).json({
+          status: "fail",
+          message: "Please wait 2 minutes before requesting another reset link",
+        });
+        return;
+      } else {
+        await existingToken.deleteOne();
+      }
+    }
+
+    const payload = { userId: user._id.toString(), email: user.email };
+    const expiry = Math.floor(Date.now() / 1000) + 10 * 60; // 10 minutes
+
+    const token = jwt.sign(
+      { ...payload, expiry },
+      env.JWT_PASSWORD_RESET_SECRET
+    );
+
+    const newToken = new PasswordResetToken({
+      userId: new mongoose.Types.ObjectId(user._id),
+      token,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    });
+
+    await newToken.save();
+
+    await passwordResetMailSender(user.email, user.name, token);
 
     res.status(200).json({
       status: "success",
-      message: "reset password link sent to registered email",
+      message: "Password reset link sent to your email",
     });
+    return;
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ status: "error", message: "Something went wrong" });
+    console.error(error);
+    res.status(500).json({ status: "error", message: "something went wrong" });
+    return;
+  }
+};
+
+// reset password
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    // validate token (in db and with jwt)
+    const tokenDetails = jwt.verify(
+      token,
+      env.JWT_PASSWORD_RESET_SECRET
+    ) as JwtPayload;
+    if (tokenDetails.expiry < Math.floor(Date.now() / 1000)) {
+      res.status(400).json({
+        status: "fail",
+        message: "Link expired, please send another link",
+      });
+      return;
+    }
+
+    const user = await UserModel.findById(tokenDetails.userId);
+    if (!user) {
+      res.status(400).json({
+        status: "fail",
+        message: "invalid request",
+      });
+      return;
+    }
+
+    const existingToken = await PasswordResetToken.findOne({
+      userId: user._id,
+    });
+    if (!existingToken) {
+      res.status(400).json({
+        status: "fail",
+        message: "invalid request",
+      });
+      return;
+    }
+    await PasswordResetToken.deleteMany({ userId: user._id });
+
+    const salt = await bcrypt.genSalt(Number(env.SALT_ROUNDS));
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "password reset successfully",
+    });
+    return;
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "something went wrong",
+    });
+    return;
   }
 };
 
@@ -269,5 +371,48 @@ export const logoutUser = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ status: "error", message: "something went wrong" });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const user = req.user as UserValues;
+
+    const { name } = req.body || {};
+    const updates: any = {};
+
+    if (name) updates.name = name;
+    // if (email) updates.email = email;
+
+    if (Object.keys(updates).length === 0) {
+      res.status(400).json({ status: "fail", message: "Nothing to update" });
+      return;
+    }
+
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      user._id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select("-password"); // exclude password field from response
+
+    if (!updatedUser) {
+      res.status(404).json({
+        status: "fail",
+        message: "user not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "User updated successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "error",
+      message: "something went wrong",
+    });
+    return;
   }
 };
