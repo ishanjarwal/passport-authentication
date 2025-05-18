@@ -19,7 +19,7 @@ const PasswordResetTokenSchema = new Schema<PasswordResetTokenValues>(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true, expires: "10m" }
 );
 
 export const PasswordResetToken = model<PasswordResetTokenValues>(
