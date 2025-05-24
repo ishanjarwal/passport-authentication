@@ -43,3 +43,16 @@ export async function resendOTPAPI(data: { email: string }) {
     }
   });
 }
+
+export async function loginUserAPI(data: { email: string; password: string }) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const url = `${env.NEXT_PUBLIC_BASE_URL}/user/login`;
+      const { email, password } = data;
+      const response = await axios.post(url, { email, password });
+      resolve(response.data);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}

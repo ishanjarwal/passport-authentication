@@ -1,13 +1,26 @@
 "use client";
+import InfoBox from "@/components/infobox/InfoBox";
+import {
+  loginUser,
+  resetInfo,
+  selectAuthState,
+} from "@/features/auth/authSlice";
+import { AppDispatch } from "@/redux/store";
 import { classNames } from "@/utils/classNames";
 import { LoginSchema, LoginValues } from "@/validations/validation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 const LoginForm = () => {
+  const { info, loading } = useSelector(selectAuthState);
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   const [password, setPassword] = useState<boolean>(true);
 
   const {
@@ -24,12 +37,34 @@ const LoginForm = () => {
   });
 
   const onSubmit = (data: LoginValues) => {
-    console.log("Valid data:", data);
-    toast.error("Your data is valid !!!");
+    dispatch(loginUser(data));
   };
+
+  useEffect(() => {
+    let timeout: any;
+    if (info?.type === "success") {
+      timeout = setTimeout(() => {
+        router.push("/account/profile");
+      }, 1000);
+    }
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [info]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetInfo({}));
+    };
+  }, []);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {info && (
+        <div>
+          <InfoBox type={info.type} message={info.message} />
+        </div>
+      )}
       <div>
         <label
           htmlFor="email"
@@ -96,10 +131,10 @@ const LoginForm = () => {
       <div>
         <button
           type="submit"
-          className="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:hover:bg-primary/50 disabled:bg-primary/50"
-          disabled={!isValid}
+          disabled={loading}
+          className="flex w-full disabled:brightness-75 disabled:cursor-not-allowed cursor-pointer justify-center rounded-md bg-primary px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-primary/80hover:text-primary/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Sign in
+          {!loading ? "Login" : <Loader2 className="animate-spin" />}
         </button>
       </div>
     </form>

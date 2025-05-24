@@ -192,7 +192,7 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(200).json({
       status: "success",
       message: "logged in successfully",
-      body: { id: existing._id, name: existing.name },
+      body: { id: existing._id, name: existing.name, email: existing.email },
     });
   } catch (error) {
     console.log(error);

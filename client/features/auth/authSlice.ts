@@ -1,7 +1,12 @@
 "use client";
 import { RootState } from "@/redux/store";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { registerUserAPI, resendOTPAPI, verifyUserAPI } from "./authAPI";
+import {
+  loginUserAPI,
+  registerUserAPI,
+  resendOTPAPI,
+  verifyUserAPI,
+} from "./authAPI";
 import { InfoTypeValues } from "./types";
 
 interface User {
@@ -58,6 +63,18 @@ export const resendOTP = createAsyncThunk(
   async (data: { email: string }, { rejectWithValue }) => {
     try {
       const response = await resendOTPAPI(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+export const loginUser = createAsyncThunk(
+  "auth/login",
+  async (data: { email: string; password: string }, { rejectWithValue }) => {
+    try {
+      const response = await loginUserAPI(data);
       return response;
     } catch (error: any) {
       return rejectWithValue(error);
@@ -135,6 +152,32 @@ const authSlice = createSlice({
         };
       })
       .addCase(resendOTP.rejected, (state, action: any) => {
+        state.loading = false;
+        state.info = {
+          // type: action.payload?.response.data?.status || "error",
+          type: "error",
+          message:
+            action.payload?.response.data?.message ||
+            "Something went wrong, try again later",
+        };
+      })
+      .addCase(loginUser.pending, (state, action: any) => {
+        state.loading = true;
+        state.info = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action: any) => {
+        state.loading = false;
+        state.info = {
+          type: "success",
+          message: action.payload?.message || "Login successful",
+        };
+        state.user = {
+          name: action.payload.body.name,
+          email: action.payload.body.email,
+          id: action.payload.body.id,
+        };
+      })
+      .addCase(loginUser.rejected, (state, action: any) => {
         state.loading = false;
         state.info = {
           // type: action.payload?.response.data?.status || "error",
