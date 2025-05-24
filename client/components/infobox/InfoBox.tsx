@@ -1,38 +1,42 @@
+"use client";
+import { InfoTypeValues } from "@/features/auth/types";
 import { classNames } from "@/utils/classNames";
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-import React from "react";
+import React, { ReactNode } from "react";
 
 interface Props {
   message: string;
-  type?: "err" | "warning" | "success";
+  type?: InfoTypeValues;
 }
 
-const icons = {
-  err: <XCircleIcon />,
+const icons: Record<string, ReactNode> = {
+  error: <XCircleIcon />,
   warning: <ExclamationCircleIcon />,
   success: <CheckCircleIcon />,
 };
 
-const InfoBox = ({ message, type = "err" }: Props) => {
+const InfoBox = ({ message, type = "error" }: Props) => {
   return (
     <div
       className={classNames(
         "sm:mx-auto sm:w-full sm:max-w-sm p-4 rounded-lg border",
-        type == "err" && "border-red-500 bg-red-400/10",
+        type == "error" && "border-red-500 bg-red-400/10",
         type == "warning" && "border-yellow-500 bg-yellow-400/10",
-        type == "success" && "border-green-500 bg-green-400/10"
+        type == "success" && "border-green-500 bg-green-400/10",
+        type == "info" && "bg-primary/10 border-primary"
       )}
     >
       <p
         className={classNames(
           "text-sm flex justify-start items-center space-x-2",
-          type == "err" && "text-red-500 ",
+          type == "error" && "text-red-500 ",
           type == "warning" && "text-yellow-500 ",
-          type == "success" && "text-green-500 "
+          type == "success" && "text-green-500 ",
+          type == "info" && "text-primary"
         )}
       >
         <span className="size-6">{icons[type]}</span>

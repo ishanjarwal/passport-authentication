@@ -1,21 +1,57 @@
 "use client";
 
-import { useRef, useState } from "react";
+import React, { useRef, useEffect } from "react";
+import { UseFormSetValue, UseFormWatch } from "react-hook-form";
 
-export default function OTPInput() {
-  const [otp, setOtp] = useState<string>("");
-  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
+interface OTPInputProps {
+  name: string;
+  length?: number;
+  setValue: UseFormSetValue<any>;
+  watch: UseFormWatch<any>;
+}
 
-  const handleChange = (value: string, index: number) => {
-    if (!/^\d?$/.test(value)) return;
+const isDigit = (char: string) => /^\d$/.test(char);
 
-    const newOtp = otp.split("");
-    newOtp[index] = value;
-    const updatedOtp = newOtp.join("").padEnd(4, "");
-    setOtp(updatedOtp);
+const OTPInput: React.FC<OTPInputProps> = ({
+  name,
+  length = 4,
+  setValue,
+  watch,
+}) => {
+  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const otp = watch(name) || "";
 
-    if (value && index < 3) {
-      inputsRef.current[index + 1]?.focus();
+  // Distribute values when pasting
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData
+      .getData("Text")
+      .replace(/\D/g, "")
+      .slice(0, length);
+    if (!pasted) return;
+
+    const otpArr = Array.from({ length }).map((_, idx) => pasted[idx] || "");
+    const newOtp = otpArr.join("");
+    setValue(name, newOtp, { shouldValidate: true });
+
+    const nextIndex = Math.min(pasted.length, length - 1);
+    inputRefs.current[nextIndex]?.focus();
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const val = e.target.value;
+    if (!isDigit(val) && val !== "") return;
+
+    const otpArr = otp.split("");
+    otpArr[index] = val;
+    const newOtp = otpArr.join("").padEnd(length, "");
+    setValue(name, newOtp, { shouldValidate: true });
+
+    if (val && index < length - 1) {
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
@@ -23,42 +59,61 @@ export default function OTPInput() {
     e: React.KeyboardEvent<HTMLInputElement>,
     index: number
   ) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputsRef.current[index - 1]?.focus();
+    const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+
+    // Allow Ctrl+V (paste), Ctrl+C, Cmd+V, etc.
+    if (isCtrlOrCmd && ["v", "c", "x", "a"].includes(e.key.toLowerCase())) {
+      return;
+    }
+
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      const otpArr = otp.split("");
+      if (otpArr[index]) {
+        otpArr[index] = "";
+        setValue(name, otpArr.join("").padEnd(length, ""), {
+          shouldValidate: true,
+        });
+      } else if (index > 0) {
+        inputRefs.current[index - 1]?.focus();
+        const prevOtp = otp.split("");
+        prevOtp[index - 1] = "";
+        setValue(name, prevOtp.join("").padEnd(length, ""), {
+          shouldValidate: true,
+        });
+      }
+    } else if (
+      !isDigit(e.key) &&
+      !["Tab", "ArrowLeft", "ArrowRight"].includes(e.key)
+    ) {
+      e.preventDefault(); // Block all other keys except digits and navigation
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const paste = e.clipboardData.getData("text").trim();
-
-    if (!/^\d{4}$/.test(paste)) return;
-
-    setOtp(paste);
-    paste.split("").forEach((char, i) => {
-      if (inputsRef.current[i]) {
-        inputsRef.current[i]!.value = char;
-      }
-    });
-
-    inputsRef.current[3]?.focus();
-  };
+  useEffect(() => {
+    if (inputRefs.current[0]) {
+      inputRefs.current[0].focus();
+    }
+  }, []);
 
   return (
-    <div className="flex gap-3 justify-center">
-      {[0, 1, 2, 3].map((i) => (
+    <div className="flex gap-2 justify-center items-center ">
+      {Array.from({ length }).map((_, i) => (
         <input
           key={i}
+          ref={(el) => void (inputRefs.current[i] = el)}
           type="text"
+          inputMode="numeric"
           maxLength={1}
           value={otp[i] || ""}
-          onChange={(e) => handleChange(e.target.value, i)}
+          onChange={(e) => handleChange(e, i)}
           onKeyDown={(e) => handleKeyDown(e, i)}
-          onPaste={handlePaste}
-          ref={(el) => void (inputsRef.current[i] = el)}
-          className="w-12 h-14 text-center text-2xl border border-primary text-foreground bg-background rounded focus:outline-none focus:ring-2 focus:ring-primary"
+          onPaste={i === 0 ? handlePaste : undefined}
+          className="w-12 h-12 text-center text-xl border border-primary rounded focus:outline-none focus:ring-2 ring-primary"
         />
       ))}
     </div>
   );
-}
+};
+
+export default OTPInput;

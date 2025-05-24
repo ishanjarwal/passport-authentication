@@ -58,3 +58,19 @@ export const LoginSchema = z.object({
 });
 
 export type LoginValues = z.infer<typeof LoginSchema>;
+
+export const VerifySchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .nonempty("Please provide your email address")
+    .email("Invalid email format")
+    .transform((val) => val.toLowerCase()), // normalize email
+
+  otp: z
+    .string()
+    .length(4, { message: "OTP must be exactly 4 digits." })
+    .regex(/^\d{4}$/, { message: "OTP must contain only digits." }),
+});
+
+export type VerifyValues = z.infer<typeof VerifySchema>;

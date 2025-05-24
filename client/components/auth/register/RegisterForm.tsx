@@ -1,11 +1,21 @@
 "use client";
 import InfoBox from "@/components/infobox/InfoBox";
+import {
+  logout,
+  registerUser,
+  resetInfo,
+  selectAuthState,
+} from "@/features/auth/authSlice";
+import { AppDispatch } from "@/redux/store";
 import { classNames } from "@/utils/classNames";
 import { RegisterSchema, RegisterValues } from "@/validations/validation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { Loader2 } from "lucide-react";
+import { redirect } from "next/navigation";
 
 const RegisterForm = () => {
   const [password, setPassword] = useState<boolean>(true);
@@ -24,15 +34,41 @@ const RegisterForm = () => {
     mode: "onChange",
   });
 
+  const dispatch = useDispatch<AppDispatch>();
+  const { info, loading, user } = useSelector(selectAuthState);
+
   const onSubmit = (data: RegisterValues) => {
-    console.log("Valid data:", data);
+    dispatch(registerUser(data));
   };
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetInfo({}));
+      dispatch(logout({}));
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    let timeout;
+    if (user?.email && info?.type == "success") {
+      let timeout = setTimeout(() => {
+        redirect("/account/verify?email=" + user.email);
+      }, 500);
+    }
+
+    return () => {
+      clearTimeout(timeout);
+      dispatch(logout({}));
+    };
+  }, [user, info]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* <div>
-        <InfoBox message="Registration Successful" type="success" />
-      </div> */}
+      {info && (
+        <div>
+          <InfoBox message={info.message} type={info.type} />
+        </div>
+      )}
       <div>
         <label
           htmlFor="email"
@@ -125,9 +161,9 @@ const RegisterForm = () => {
         <button
           type="submit"
           className="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:hover:bg-primary/50 disabled:bg-primary/50"
-          disabled={!isValid}
+          disabled={!isValid || loading}
         >
-          Register
+          {!loading ? "Register" : <Loader2 className="animate-spin" />}
         </button>
       </div>
     </form>
