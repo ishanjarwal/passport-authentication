@@ -1,10 +1,59 @@
+"use client";
+import {
+  resetInfo,
+  selectAuthState,
+  updateUser,
+} from "@/features/auth/authSlice";
+import { AppDispatch } from "@/redux/store";
+import { ProfileSchema, ProfileValues } from "@/validations/validation";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
-import React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import ChangePasswordForm from "./ChangePasswordForm";
+import { Loader2 } from "lucide-react";
 
 const ProfileForm = () => {
+  const { user, info, loading } = useSelector(selectAuthState);
+  const dispatch = useDispatch<AppDispatch>();
+  const {
+    register,
+    formState: { errors, isValid },
+    handleSubmit,
+  } = useForm<ProfileValues>({
+    defaultValues: { name: user?.name, email: user?.email, bio: user?.bio },
+    resolver: zodResolver(ProfileSchema),
+  });
+
+  const onSubmit = (data: ProfileValues) => {
+    dispatch(updateUser({ bio: data.bio || "", name: data.name }));
+  };
+
+  useEffect(() => {
+    if (info?.type === "success") {
+      toast.success(info.message);
+    } else if (info?.type === "error") {
+      toast.error(info.message);
+    } else if (info?.type === "info" || info?.type === "warning") {
+      toast.warning(info.message);
+    }
+  }, [info]);
+
+  const [changePassword, setChangePassword] = useState<boolean>(false);
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetInfo({}));
+    };
+  }, []);
+
   return (
     <div>
-      <form>
+      <ChangePasswordForm open={changePassword} setOpen={setChangePassword} />
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-12">
           <div className="border-b border-foreground-muted/10 pb-12">
             <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
@@ -33,12 +82,17 @@ const ProfileForm = () => {
                 >
                   Name
                 </label>
+                {errors.name && (
+                  <p className="text-red-500 text-sm">{errors.name.message}</p>
+                )}
                 <div className="mt-2">
                   <div className="flex items-center rounded-md bg-background-muted pl-3 outline-1 -outline-offset-1 outline-foreground-muted/10 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-primary">
                     <input
+                      {...register("name")}
                       id="name"
                       name="name"
                       type="text"
+                      defaultValue={user?.name}
                       placeholder="janesmith"
                       className="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-foreground placeholder:text-foreground-muted/50 focus:outline-none sm:text-sm/6"
                     />
@@ -59,17 +113,19 @@ const ProfileForm = () => {
                       id="password"
                       name="password"
                       type="password"
-                      placeholder=""
+                      placeholder="********"
+                      disabled
                       className="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-foreground placeholder:text-foreground-muted/50 focus:outline-none sm:text-sm/6"
                     />
                   </div>
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={() => setChangePassword(true)}
                     className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-primary/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
                     Change
                   </button>
-                </div>
+                </div>{" "}
               </div>
 
               <div className="col-span-full">
@@ -77,15 +133,18 @@ const ProfileForm = () => {
                   htmlFor="about"
                   className="block text-sm/6 font-medium text-foreground"
                 >
-                  About
+                  Bio
                 </label>
+                {errors.bio && (
+                  <p className="text-red-500 text-sm">{errors.bio.message}</p>
+                )}
                 <div className="mt-2">
                   <textarea
-                    id="about"
-                    name="about"
+                    {...register("bio")}
+                    id="bio"
+                    name="bio"
                     rows={3}
                     className="block w-full rounded-md bg-background-muted px-3 py-1.5 text-base text-foreground outline-1 -outline-offset-1 outline-foreground-muted/10 placeholder:text-foreground-muted/50 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
-                    defaultValue={""}
                   />
                 </div>
                 <p className="mt-3 text-sm/6 text-gray-600">
@@ -98,16 +157,10 @@ const ProfileForm = () => {
 
         <div className="mt-6 flex items-center justify-end gap-x-6">
           <button
-            type="button"
-            className="text-sm/6 font-semibold text-foreground"
-          >
-            Cancel
-          </button>
-          <button
             type="submit"
-            className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-primary/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="rounded-md cursor-pointer bg-primary px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-primary/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            Save
+            {!loading ? "Save" : <Loader2 className="animate-spin" />}
           </button>
         </div>
       </form>

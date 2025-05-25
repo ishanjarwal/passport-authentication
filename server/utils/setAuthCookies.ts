@@ -1,5 +1,6 @@
 import { Response } from "express";
 import { TokenValues } from "./generateTokens";
+import { env } from "../env";
 
 const setAuthCookies = (res: Response, tokens: TokenValues) => {
   const {
@@ -15,7 +16,7 @@ const setAuthCookies = (res: Response, tokens: TokenValues) => {
 
   res.cookie("accessToken", newAccessToken, {
     httpOnly: true,
-    secure: true, // Set to true if using HTTPS
+    secure: env.ENVIRONMENT === "production", // Set to true if using HTTPS
     maxAge: accessTokenMaxAge,
     // sameSite: 'strict', // Adjust according to your requirements
   });
@@ -23,7 +24,7 @@ const setAuthCookies = (res: Response, tokens: TokenValues) => {
   // Set Cookie for Refresh Token
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
-    secure: true, // Set to true if using HTTPS
+    secure: env.ENVIRONMENT === "production", // Set to true if using HTTPS
     maxAge: refreshTokenmaxAge,
     // sameSite: 'strict', // Adjust according to your requirements
   });

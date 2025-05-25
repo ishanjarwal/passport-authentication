@@ -1,7 +1,6 @@
 "use client";
 import InfoBox from "@/components/infobox/InfoBox";
 import {
-  logout,
   registerUser,
   resetInfo,
   selectAuthState,
@@ -11,11 +10,10 @@ import { classNames } from "@/utils/classNames";
 import { RegisterSchema, RegisterValues } from "@/validations/validation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { Loader2 } from "lucide-react";
-import { redirect } from "next/navigation";
 
 const RegisterForm = () => {
   const [password, setPassword] = useState<boolean>(true);
@@ -44,23 +42,8 @@ const RegisterForm = () => {
   useEffect(() => {
     return () => {
       dispatch(resetInfo({}));
-      dispatch(logout({}));
     };
   }, [dispatch]);
-
-  useEffect(() => {
-    let timeout;
-    if (user?.email && info?.type == "success") {
-      let timeout = setTimeout(() => {
-        redirect("/account/verify?email=" + user.email);
-      }, 500);
-    }
-
-    return () => {
-      clearTimeout(timeout);
-      dispatch(logout({}));
-    };
-  }, [user, info]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

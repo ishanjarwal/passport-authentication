@@ -1,3 +1,5 @@
+"use client";
+import { logoutUser, selectAuthState } from "@/features/auth/authSlice";
 import { classNames } from "@/utils/classNames";
 import {
   Disclosure,
@@ -8,26 +10,20 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import LogoutButton from "../auth/logout/LogoutButton";
 
-const user = {
-  name: "Tom Cook",
-  email: "tom@example.com",
-  imageUrl:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-};
 const navigation = [
-  { name: "Home", href: "#", current: true },
-  { name: "Documentation", href: "#", current: false },
-  { name: "Protected Route", href: "#", current: false },
+  { name: "Home", href: "/", current: true },
+  { name: "Documentation", href: "/documentation", current: false },
+  { name: "Protected Route", href: "/protected", current: false },
 ];
-const userNavigation = [
-  { name: "Your Profile", href: "#" },
-  { name: "Sign out", href: "#" },
-];
+const userNavigation = [{ name: "Your Profile", href: "/account/profile" }];
 
 const Navbar = () => {
+  const { is_auth, user } = useSelector(selectAuthState);
   return (
     <Disclosure as="nav" className="bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -39,7 +35,7 @@ const Navbar = () => {
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 {navigation.map((item) => (
-                  <a
+                  <Link
                     key={item.name}
                     href={item.href}
                     aria-current={item.current ? "page" : undefined}
@@ -51,56 +47,64 @@ const Navbar = () => {
                     )}
                   >
                     {item.name}
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
           </div>
           <div className="hidden md:block">
             <div className="ml-4 flex items-center md:ml-6">
-              {/* Profile dropdown */}
-              {/* <Menu as="div" className="relative ml-3">
-                <div>
-                  <MenuButton className="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
-                    <span className="absolute -inset-1.5" />
-                    <span className="sr-only">Open user menu</span>
-                    <img
-                      alt=""
-                      src={user.imageUrl}
-                      className="size-8 rounded-full"
-                    />
-                  </MenuButton>
-                </div>
-                <MenuItems
-                  transition
-                  className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-background-muted py-1 ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in shadow-xl"
-                >
-                  {userNavigation.map((item) => (
-                    <MenuItem key={item.name}>
-                      <a
-                        href={item.href}
-                        className="block px-4 py-2 text-sm text-foreground data-focus:bg-background data-focus:outline-hidden"
-                      >
-                        {item.name}
-                      </a>
+              {is_auth ? (
+                <Menu as="div" className="relative ml-3">
+                  <div>
+                    <MenuButton className="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
+                      <span className="absolute -inset-1.5" />
+                      <span className="sr-only">Open user menu</span>
+                      <img
+                        alt=""
+                        src={`https://ui-avatars.com/api/?name=${user?.name?.replaceAll(
+                          " ",
+                          "+"
+                        )}`}
+                        className="size-8 rounded-full"
+                      />
+                    </MenuButton>
+                  </div>
+                  <MenuItems
+                    transition
+                    className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-background-muted py-1 ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in shadow-xl"
+                  >
+                    {userNavigation.map((item) => (
+                      <MenuItem key={item.name}>
+                        <Link
+                          href={item.href}
+                          className="block px-4 py-2 text-sm text-foreground data-focus:bg-background data-focus:outline-hidden"
+                        >
+                          {item.name}
+                        </Link>
+                      </MenuItem>
+                    ))}
+                    <MenuItem>
+                      <LogoutButton className="block w-full text-start px-4 py-2 text-sm text-foreground data-focus:bg-background data-focus:outline-hidden cursor-pointer hover:bg-background" />
                     </MenuItem>
-                  ))}
-                </MenuItems>
-              </Menu> */}
-              <div className="flex items-center space-x-2">
-                <Link
-                  href={"/account/register"}
-                  className="rounded-md px-3 py-2 text-sm font-medium bg-background text-primary border border-primary hover:brightness-90"
-                >
-                  Register
-                </Link>
-                <Link
-                  href={"/account/login"}
-                  className="rounded-md px-3 py-2 text-sm font-medium bg-primary text-white border border-primary hover:brightness-90"
-                >
-                  Login
-                </Link>
-              </div>
+                  </MenuItems>
+                </Menu>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Link
+                    href={"/account/register"}
+                    className="rounded-md px-3 py-2 text-sm font-medium bg-background text-primary border border-primary hover:brightness-90"
+                  >
+                    Register
+                  </Link>
+                  <Link
+                    href={"/account/login"}
+                    className="rounded-md px-3 py-2 text-sm font-medium bg-primary text-white border border-primary hover:brightness-90"
+                  >
+                    Login
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
           <div className="-mr-2 flex md:hidden">
@@ -140,37 +144,61 @@ const Navbar = () => {
             </DisclosureButton>
           ))}
         </div>
-        <div className="border-t border-gray-700 pt-4 pb-3">
-          <div className="flex items-center px-5">
-            <div className="shrink-0">
-              <img
-                alt=""
-                src={user.imageUrl}
-                className="size-10 rounded-full"
-              />
+        {is_auth ? (
+          <div className="border-t border-gray-700 pt-4 pb-3">
+            <div className="flex items-center px-5">
+              <div className="shrink-0">
+                <img
+                  alt=""
+                  src={`https://ui-avatars.com/api/?name=${user?.name?.replaceAll(
+                    " ",
+                    "+"
+                  )}`}
+                  className="size-10 rounded-full"
+                />
+              </div>
+              <div className="ml-3">
+                <div className="text-base/5 font-medium text-white">
+                  {user?.name}
+                </div>
+                <div className="text-sm font-medium text-gray-400">
+                  {user?.email}
+                </div>
+              </div>
             </div>
-            <div className="ml-3">
-              <div className="text-base/5 font-medium text-white">
-                {user.name}
-              </div>
-              <div className="text-sm font-medium text-gray-400">
-                {user.email}
-              </div>
+            <div className="mt-3 space-y-1 px-2">
+              {userNavigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-foreground/10"
+                >
+                  {item.name}
+                </Link>
+              ))}
+              <LogoutButton className="block w-full text-start rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-foreground/10 cursor-pointer" />
             </div>
           </div>
-          <div className="mt-3 space-y-1 px-2">
-            {userNavigation.map((item) => (
-              <DisclosureButton
-                key={item.name}
-                as="a"
-                href={item.href}
-                className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+        ) : (
+          <div className="flex items-center space-x-2 px-4">
+            <DisclosureButton>
+              <Link
+                href={"/account/register"}
+                className="rounded-md px-3 py-2 text-sm font-medium bg-background text-primary border border-primary hover:brightness-90"
               >
-                {item.name}
-              </DisclosureButton>
-            ))}
+                Register
+              </Link>
+            </DisclosureButton>
+            <DisclosureButton>
+              <Link
+                href={"/account/login"}
+                className="rounded-md px-3 py-2 text-sm font-medium bg-primary text-white border border-primary hover:brightness-90"
+              >
+                Login
+              </Link>
+            </DisclosureButton>
           </div>
-        </div>
+        )}
       </DisclosurePanel>
     </Disclosure>
   );

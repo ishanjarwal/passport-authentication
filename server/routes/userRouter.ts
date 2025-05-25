@@ -74,14 +74,14 @@ userRouter
 userRouter
   .get(
     "/me",
-    rateLimiter(1 * 60 * 1000, 15, "Please try again later"),
+    rateLimiter(1 * 60 * 1000, 30, "Please try again later"),
     accessTokenAutoRefresh,
     passportAuthenticate,
     userProfile
   )
   .get(
     "/logout",
-    rateLimiter(2 * 60 * 1000, 1, "Please try again later"),
+    rateLimiter(2 * 60 * 1000, 5, "Please try again later"),
     accessTokenAutoRefresh,
     passportAuthenticate,
     logoutUser
@@ -97,7 +97,7 @@ userRouter
   )
   .put(
     "/",
-    rateLimiter(1 * 60 * 1000, 1, "Please try again later"),
+    rateLimiter(1 * 60 * 1000, 2, "Please try again later"),
     accessTokenAutoRefresh,
     passportAuthenticate,
     validateUpdateUser,

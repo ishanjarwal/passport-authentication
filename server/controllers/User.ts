@@ -378,11 +378,11 @@ export const updateUser = async (req: Request, res: Response) => {
   try {
     const user = req.user as UserValues;
 
-    const { name } = req.body || {};
+    const { name, bio } = req.body || {};
     const updates: any = {};
 
     if (name) updates.name = name;
-    // if (email) updates.email = email;
+    if (bio) updates.bio = bio;
 
     if (Object.keys(updates).length === 0) {
       res.status(400).json({ status: "fail", message: "Nothing to update" });

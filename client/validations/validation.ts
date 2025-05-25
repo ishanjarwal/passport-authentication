@@ -74,3 +74,28 @@ export const VerifySchema = z.object({
 });
 
 export type VerifyValues = z.infer<typeof VerifySchema>;
+
+export const ProfileSchema = z.object({
+  name: z.string().nonempty("Please provide a name"),
+  email: z.string().email("Invalid email format"),
+  bio: z.string().max(500, "Max 500 characters").optional(),
+});
+export type ProfileValues = z.infer<typeof ProfileSchema>;
+
+import { z } from "zod";
+
+export const ChangePasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter"),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Passwords do not match",
+    path: ["password_confirmation"], // Attach error to confirmation field
+  });
+
+export type ChangePasswordValues = z.infer<typeof ChangePasswordSchema>;

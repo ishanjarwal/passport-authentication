@@ -11,16 +11,13 @@ import { LoginSchema, LoginValues } from "@/validations/validation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
 
 const LoginForm = () => {
   const { info, loading } = useSelector(selectAuthState);
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
   const [password, setPassword] = useState<boolean>(true);
 
   const {
@@ -39,18 +36,6 @@ const LoginForm = () => {
   const onSubmit = (data: LoginValues) => {
     dispatch(loginUser(data));
   };
-
-  useEffect(() => {
-    let timeout: any;
-    if (info?.type === "success") {
-      timeout = setTimeout(() => {
-        router.push("/account/profile");
-      }, 1000);
-    }
-    return () => {
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [info]);
 
   useEffect(() => {
     return () => {

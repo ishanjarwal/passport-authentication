@@ -15,6 +15,7 @@ const envSchema = z.object({
   JWT_ACCESS_TOKEN_SECRET: z.string(),
   JWT_REFRESH_TOKEN_SECRET: z.string(),
   JWT_PASSWORD_RESET_SECRET: z.string(),
+  ENVIRONMENT: z.string(),
 });
 
 export const env = envSchema.parse(process.env);
