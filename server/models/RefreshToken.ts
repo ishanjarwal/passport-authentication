@@ -14,7 +14,12 @@ const refreshTokenSchema = new mongoose.Schema(
     },
     token: { type: String, required: true },
   },
-  { timestamps: true, expires: "7d" }
+  { timestamps: true }
+);
+
+refreshTokenSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 60 * 60 * 24 * 7 } // auto delete after 7 days
 );
 
 const RefreshTokenModel = mongoose.model<RefreshTokenValues>(

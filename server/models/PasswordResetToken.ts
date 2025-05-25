@@ -19,9 +19,13 @@ const PasswordResetTokenSchema = new Schema<PasswordResetTokenValues>(
       required: true,
     },
   },
-  { timestamps: true, expires: "10m" }
+  { timestamps: true }
 );
 
+PasswordResetTokenSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 60 * 10 } // auto delete after 10 minutes
+);
 export const PasswordResetToken = model<PasswordResetTokenValues>(
   "password_reset_tokens",
   PasswordResetTokenSchema
