@@ -16,6 +16,7 @@ import {
   validateEmailVerification,
   validateLogin,
   validatePasswordChange,
+  validatePasswordReset,
   validateUpdateUser,
   validateUser,
 } from "../validators/userValidator";
@@ -50,7 +51,7 @@ userRouter
   )
   .post(
     "/login",
-    rateLimiter(10 * 60 * 1000, 5, "Too many requests"),
+    rateLimiter(1 * 60 * 1000, 2, "Too many requests"),
     validateLogin,
     handleValidation,
     loginUser
@@ -64,8 +65,8 @@ userRouter
   )
   .post(
     "/reset-password/:token",
-    rateLimiter(5 * 60 * 1000, 1, "Please try again after some time"),
-    validatePasswordChange,
+    rateLimiter(5 * 60 * 1000, 10, "Please try again after some time"),
+    validatePasswordReset,
     handleValidation,
     resetPassword
   );

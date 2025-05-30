@@ -5,6 +5,7 @@ import {
   resetInfo,
   selectAuthState,
 } from "@/features/auth/authSlice";
+import { useResetInfoOnMount } from "@/hooks/useResetInfoOnMount";
 import { AppDispatch } from "@/redux/store";
 import { classNames } from "@/utils/classNames";
 import { RegisterSchema, RegisterValues } from "@/validations/validation";
@@ -16,6 +17,8 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 
 const RegisterForm = () => {
+  useResetInfoOnMount();
+
   const [password, setPassword] = useState<boolean>(true);
 
   const {
@@ -38,12 +41,6 @@ const RegisterForm = () => {
   const onSubmit = (data: RegisterValues) => {
     dispatch(registerUser(data));
   };
-
-  useEffect(() => {
-    return () => {
-      dispatch(resetInfo({}));
-    };
-  }, [dispatch]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

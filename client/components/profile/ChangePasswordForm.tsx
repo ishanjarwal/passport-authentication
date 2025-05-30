@@ -13,7 +13,7 @@ import {
 } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -25,7 +25,7 @@ const ChangePasswordForm = ({
   setOpen: (state: boolean) => void;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { info, loading } = useSelector(selectAuthState);
+  const { info, loading, user } = useSelector(selectAuthState);
 
   const {
     register,
@@ -64,10 +64,31 @@ const ChangePasswordForm = ({
                     </DialogTitle>
                     <div className="mt-2 flex flex-col space-y-4">
                       <div className="flex flex-col items-start">
-                        <label
-                          htmlFor="email"
-                          className="block text-sm/6 font-medium text-foreground"
-                        >
+                        <label className="block text-sm/6 font-medium text-foreground">
+                          Old Password
+                        </label>
+                        {errors.old_password && (
+                          <p className="text-red-500 text-sm">
+                            {errors.old_password.message}
+                          </p>
+                        )}
+                        <div className="mt-2 w-full">
+                          <input
+                            {...register("old_password")}
+                            type="password"
+                            className="block w-full rounded-md bg-background-muted px-3 py-1.5 text-base text-foreground outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
+                          />
+                        </div>
+                        <p className="text-primary text-sm text-end w-full mt-1">
+                          <Link
+                            href={`/account/reset-password?email=${user?.email}`}
+                          >
+                            Forgot password ?
+                          </Link>
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <label className="block text-sm/6 font-medium text-foreground">
                           New Password
                         </label>
                         {errors.password && (
@@ -87,10 +108,7 @@ const ChangePasswordForm = ({
                       </div>
 
                       <div className="flex flex-col items-start">
-                        <label
-                          htmlFor="email"
-                          className="block text-sm/6 font-medium text-foreground"
-                        >
+                        <label className="block text-sm/6 font-medium text-foreground">
                           Confirm Password
                         </label>
                         {errors.password_confirmation && (

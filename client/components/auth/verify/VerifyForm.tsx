@@ -7,6 +7,7 @@ import {
   selectAuthState,
   verifyUser,
 } from "@/features/auth/authSlice";
+import { useResetInfoOnMount } from "@/hooks/useResetInfoOnMount";
 import { AppDispatch } from "@/redux/store";
 import { classNames } from "@/utils/classNames";
 import { updateSearchParam } from "@/utils/updateSearchParam";
@@ -19,6 +20,7 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 
 const VerifyForm = () => {
+  useResetInfoOnMount();
   const dispatch = useDispatch<AppDispatch>();
   const { info, loading } = useSelector(selectAuthState);
   const searchParams = useSearchParams();
@@ -70,12 +72,6 @@ const VerifyForm = () => {
       if (timeout) clearTimeout(timeout);
     };
   }, [info]);
-
-  useEffect(() => {
-    return () => {
-      dispatch(resetInfo({}));
-    };
-  }, []);
 
   return (
     <div>

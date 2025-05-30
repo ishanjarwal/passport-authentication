@@ -82,10 +82,12 @@ export const ProfileSchema = z.object({
 });
 export type ProfileValues = z.infer<typeof ProfileSchema>;
 
-import { z } from "zod";
-
 export const ChangePasswordSchema = z
   .object({
+    old_password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .max(50, "Password is maximum 50 characters"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters long")
@@ -99,3 +101,24 @@ export const ChangePasswordSchema = z
   });
 
 export type ChangePasswordValues = z.infer<typeof ChangePasswordSchema>;
+
+export const ResetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter"),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Passwords do not match",
+    path: ["password_confirmation"], // Attach error to confirmation field
+  });
+
+export type ResetPasswordValues = z.infer<typeof ResetPasswordSchema>;
+
+export const EmailSchema = z.object({
+  email: z.string().nonempty().email("Invalid Email"),
+});
+export type EmailValues = z.infer<typeof EmailSchema>;

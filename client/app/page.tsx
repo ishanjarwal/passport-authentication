@@ -5,10 +5,10 @@ const Home = () => {
     <div>
       <header className="bg-background-muted shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
             PassportJS Authentication System
           </h1>
-          <p className="text-foreground-muted">
+          <p className="text-foreground-muted mt-4">
             A simple yet secured passport js jwt based authentication system
             that can be used with any kind of express application.
           </p>
@@ -92,7 +92,7 @@ const Home = () => {
               <p className="text-foreground-muted">
                 You can find the full documentation and setup guide on the{" "}
                 <a
-                  href="https://github.com/yourusername/passport-auth-project"
+                  href="https://github.com/ishanjarwal/passport-authentication"
                   className="text-primary underline hover:opacity-80"
                   target="_blank"
                   rel="noopener noreferrer"

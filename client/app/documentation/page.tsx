@@ -1,97 +1,95 @@
+import CodeBlock from "@/components/documentation/CodeBlock";
+
 const page = () => {
   return (
     <div>
       <header className="bg-background-muted shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Documentation
+          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
+            📘 Project Documentation
           </h1>
-          <p className="text-foreground-muted">
-            Here is a comprehensive documentation on how to use this project and
-            integrate it with any app for providing authentication.
+          <p className="text-foreground-muted mt-4">
+            This guide documents the setup and API usage for the
+            Passport.js-based authentication project.
           </p>
         </div>
       </header>
       <main>
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="bg-background text-foreground min-h-screen px-6 py-12 max-w-3xl mx-auto space-y-10">
-            {/* Introduction */}
-            <section>
-              <h1 className="text-3xl font-bold mb-4">
-                📘 Project Documentation
-              </h1>
-              <p className="text-foreground-muted text-lg">
-                This guide provides the complete documentation for setting up
-                and using the Passport.js authentication project. It covers
-                installation, environment setup, and API specifications.
-              </p>
-            </section>
-
             {/* Installation */}
             <section>
               <h2 className="text-2xl font-semibold mb-3">⚙️ Installation</h2>
-              <p className="text-foreground-muted mb-4">
-                The project is structured into two main directories:{" "}
-                <code className="bg-background-muted text-foreground px-1 rounded">
-                  client
-                </code>{" "}
-                and{" "}
-                <code className="bg-background-muted text-foreground px-1 rounded">
-                  server
-                </code>
-                .
-              </p>
-              <ol className="list-decimal list-inside text-foreground-muted space-y-2">
+              <ol className="list-decimal list-inside text-foreground-muted space-y-4">
                 <li>
                   Clone the repository:
-                  <pre className="bg-background-muted text-foreground p-4 rounded mt-2 text-sm">
-                    <code>
-                      git clone
-                      https://github.com/yourusername/passport-auth-project
-                    </code>
-                  </pre>
+                  <CodeBlock language="bash">
+                    {`git clone https://github.com/ishanjarwal/passport-authentication`}
+                  </CodeBlock>
                 </li>
                 <li>
                   Install dependencies:
-                  <pre className="bg-background-muted text-foreground p-4 rounded mt-2 text-sm">
-                    <code>
-                      {`cd client
+                  <CodeBlock language="bash">
+                    {`cd client
 npm install
 
 cd ../server
 npm install`}
-                    </code>
-                  </pre>
+                  </CodeBlock>
                 </li>
                 <li>
-                  Add environment variables for both directories:
-                  <pre className="bg-background-muted text-foreground p-4 rounded mt-2 text-sm">
-                    <code>
-                      {`// .env (server)
-PORT=5000
-MONGO_URI=your_mongodb_connection
-SESSION_SECRET=your_session_secret
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
+                  Add environment variables:
+                  <CodeBlock language="bash">
+                    {`# /server
+# Server port
+PORT=8080
 
-// .env (client)
-VITE_API_BASE_URL=http://localhost:5000`}
-                    </code>
-                  </pre>
+# Frontend origin for CORS
+FRONTEND_HOST=http://localhost:3000
+
+# MongoDB connection string
+DB_URL=""
+
+# Bcrypt salt rounds for password hashing
+SALT_ROUNDS=
+
+# SMTP username (your email address)
+EMAIL_USER=
+
+# Email address that appears in the "from" field
+EMAIL_FROM=
+
+# SMTP password or application-specific password
+EMAIL_PASSWORD=
+
+# SMTP port (usually 587 for TLS)
+EMAIL_PORT=587
+
+# SMTP provider hostname (e.g., Gmail)
+EMAIL_PROVIDER=smtp.gmail.com
+
+# JWT secret for access tokens
+JWT_ACCESS_TOKEN_SECRET=
+
+# JWT secret for refresh tokens
+JWT_REFRESH_TOKEN_SECRET=
+
+# JWT secret used for password reset links
+JWT_PASSWORD_RESET_SECRET=
+
+# Application environment (development | production)
+ENVIRONMENT=development
+
+# /client
+NEXT_PUBLIC_BASE_URL=http://localhost:8080/api/v1
+`}
+                  </CodeBlock>
                 </li>
                 <li>
-                  Start the development server:
-                  <pre className="bg-background-muted text-foreground p-4 rounded mt-2 text-sm">
-                    <code>
-                      {`// In server/
-npm run dev
-
-// In client/
-npm run dev`}
-                    </code>
-                  </pre>
+                  Start both development servers:
+                  <CodeBlock language="bash">
+                    {`npm run dev # in both /client and /server directories`}
+                  </CodeBlock>
                 </li>
               </ol>
             </section>
@@ -100,85 +98,178 @@ npm run dev`}
             <section>
               <h2 className="text-2xl font-semibold mb-3">🔌 API Reference</h2>
 
-              {/* Helper function for each endpoint block */}
               {[
                 {
                   title: "Create User",
                   method: "POST",
                   path: "/user/",
-                  body: `{ "name": "John", "email": "john@example.com", "password": "securePassword123" }`,
-                  success: `{ "message": "User created. Verification email sent." }`,
-                  error: `{ "error": "Validation error or rate limit exceeded" }`,
+                  body: `{
+"name": "John Doe",
+"email": "john@example.com",
+"password": "securePassword123"
+}`,
+                  success: `{
+"status": "success",
+"message": "User created. Verification email sent."
+}`,
+                  error: `{
+"status": "error",
+"message": "Validation error or rate limit exceeded"
+}`,
                 },
                 {
                   title: "Verify Email",
                   method: "POST",
                   path: "/user/verify-email",
-                  body: `{ "email": "john@example.com", "otp": "123456" }`,
-                  success: `{ "message": "Email verified successfully." }`,
-                  error: `{ "error": "Invalid or expired OTP" }`,
+                  body: `{
+"email": "john@example.com",
+"otp": "1234"
+}`,
+                  success: `{
+"status": "success",
+"message": "Account verified successfully."
+}`,
+                  error: `{
+"status": "error",
+"message": "Invalid or expired OTP"
+}`,
                 },
                 {
                   title: "Resend OTP",
                   method: "POST",
                   path: "/user/resend-otp",
-                  body: `{ "email": "john@example.com" }`,
-                  success: `{ "message": "OTP resent to your email." }`,
-                  error: `{ "error": "Rate limit exceeded" }`,
+                  body: `{
+"email": "john@example.com"
+}`,
+                  success: `{
+"status": "success",
+"message": "OTP resent to your email."
+}`,
+                  error: `{
+"status": "error",
+"message": "Rate limit exceeded / No Users found"
+}`,
                 },
                 {
                   title: "Login",
                   method: "POST",
                   path: "/user/login",
-                  body: `{ "email": "john@example.com", "password": "securePassword123" }`,
-                  success: `{ "token": "jwt-token", "user": { "name": "John" } }`,
-                  error: `{ "error": "Invalid credentials" }`,
+                  body: `{
+"email": "john@example.com",
+"password": "securePassword123"
+}`,
+                  success: `{
+"status": "success",
+"message": "Login successful",
+"body": {
+    "_id": "2893fhw8e8sda",
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
+}`,
+                  error: `{
+"status": "error",
+"message": "Invalid credentials"
+}`,
                 },
                 {
                   title: "Request Password Reset",
                   method: "POST",
                   path: "/user/reset-password",
-                  body: `{ "email": "john@example.com" }`,
-                  success: `{ "message": "Password reset email sent." }`,
-                  error: `{ "error": "Email not found or rate limit exceeded" }`,
+                  body: `{
+"email": "john@example.com"
+}`,
+                  success: `{
+"status": "success",
+"message": "Password reset email sent."
+}`,
+                  error: `{
+"status": "error",
+"message": "Email not found or rate limit exceeded"
+}`,
                 },
                 {
                   title: "Reset Password (with Token)",
                   method: "POST",
                   path: "/user/reset-password/:token",
-                  body: `{ "newPassword": "newSecurePassword123" }`,
-                  success: `{ "message": "Password updated successfully." }`,
-                  error: `{ "error": "Invalid or expired token" }`,
+                  body: `{
+"password": "newSecurePassword123",
+"password_confirmation": "newSecurePassword123",
+}`,
+                  success: `{
+"status": "success",
+"message": "Password updated successfully."
+}`,
+                  error: `{
+"status": "error",
+"message": "Invalid or expired token"
+}`,
                 },
                 {
                   title: "Get Profile",
                   method: "GET",
                   path: "/user/me",
-                  success: `{ "user": { "name": "John", "email": "john@example.com" } }`,
-                  error: `{ "error": "Unauthorized or token expired" }`,
+                  success: `{
+"status": "success",
+"message": "User data fetched.",
+"body": {
+    "_id": "2893fhw8e8sda",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "bio": "Hey there, I am a coder."
+  }
+}`,
+                  error: `{
+"status": "error",
+"message": "Unauthorized or token expired"
+}`,
                 },
                 {
                   title: "Logout",
                   method: "GET",
                   path: "/user/logout",
-                  success: `{ "message": "User logged out." }`,
-                  error: `{ "error": "Unauthorized or token expired" }`,
+                  success: `{
+"status": "success",
+"message": "User logged out."
+}`,
+                  error: `{
+"status": "error",
+"message": "Unauthorized or token expired"
+}`,
                 },
                 {
                   title: "Change Password",
                   method: "POST",
                   path: "/user/change-password",
-                  body: `{ "oldPassword": "oldPass", "newPassword": "newPass123" }`,
-                  success: `{ "message": "Password changed successfully." }`,
-                  error: `{ "error": "Old password incorrect or validation failed" }`,
+                  body: `{
+"password": "12345678",
+"password_confirmation": "12345678"
+}`,
+                  success: `{
+"status": "success",
+"message": "Password changed successfully."
+}`,
+                  error: `{
+"status": "error",
+"message": "passwords don't match "
+}`,
                 },
                 {
                   title: "Update User",
                   method: "PUT",
                   path: "/user/",
-                  body: `{ "name": "New Name" }`,
-                  success: `{ "message": "Profile updated." }`,
-                  error: `{ "error": "Validation failed or unauthorized" }`,
+                  body: `{
+"name": "New Name",
+"bio": "New Bio",
+}`,
+                  success: `{
+"status": "success",
+"message": "Profile updated."
+}`,
+                  error: `{
+"status": "error",
+"message": "Validation failed or unauthorized"
+}`,
                 },
               ].map((api, index) => (
                 <div key={index} className="mb-10">
@@ -192,9 +283,7 @@ npm run dev`}
                       <p className="text-sm font-medium text-foreground-muted">
                         Sample Request Body:
                       </p>
-                      <pre className="bg-background-muted text-foreground p-4 rounded text-sm mb-2 overflow-x-auto">
-                        <code>{api.body}</code>
-                      </pre>
+                      <CodeBlock language="json">{api.body}</CodeBlock>
                     </>
                   )}
 
@@ -203,9 +292,7 @@ npm run dev`}
                       <p className="text-sm font-medium text-foreground-muted">
                         Sample Success Response:
                       </p>
-                      <pre className="bg-background-muted text-foreground p-4 rounded text-sm mb-2 overflow-x-auto">
-                        <code>{api.success}</code>
-                      </pre>
+                      <CodeBlock language="json">{api.success}</CodeBlock>
                     </>
                   )}
 
@@ -214,9 +301,7 @@ npm run dev`}
                       <p className="text-sm font-medium text-foreground-muted">
                         Sample Error Response:
                       </p>
-                      <pre className="bg-background-muted text-foreground p-4 rounded text-sm overflow-x-auto">
-                        <code>{api.error}</code>
-                      </pre>
+                      <CodeBlock language="json">{api.error}</CodeBlock>
                     </>
                   )}
                 </div>

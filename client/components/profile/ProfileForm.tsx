@@ -5,18 +5,20 @@ import {
   updateUser,
 } from "@/features/auth/authSlice";
 import { AppDispatch } from "@/redux/store";
+import toastEmitter from "@/utils/toastEmitter";
 import { ProfileSchema, ProfileValues } from "@/validations/validation";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
 import ChangePasswordForm from "./ChangePasswordForm";
-import { Loader2 } from "lucide-react";
+import { useResetInfoOnMount } from "@/hooks/useResetInfoOnMount";
 
 const ProfileForm = () => {
+  useResetInfoOnMount();
+
   const { user, info, loading } = useSelector(selectAuthState);
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -33,22 +35,12 @@ const ProfileForm = () => {
   };
 
   useEffect(() => {
-    if (info?.type === "success") {
-      toast.success(info.message);
-    } else if (info?.type === "error") {
-      toast.error(info.message);
-    } else if (info?.type === "info" || info?.type === "warning") {
-      toast.warning(info.message);
+    if (info) {
+      toastEmitter(info?.type, info?.message, dispatch);
     }
-  }, [info]);
+  }, [info, dispatch]);
 
   const [changePassword, setChangePassword] = useState<boolean>(false);
-
-  useEffect(() => {
-    return () => {
-      dispatch(resetInfo({}));
-    };
-  }, []);
 
   return (
     <div>

@@ -5,17 +5,21 @@ import {
   resetInfo,
   selectAuthState,
 } from "@/features/auth/authSlice";
+import { useResetInfoOnMount } from "@/hooks/useResetInfoOnMount";
 import { AppDispatch } from "@/redux/store";
 import { classNames } from "@/utils/classNames";
+import toastEmitter from "@/utils/toastEmitter";
 import { LoginSchema, LoginValues } from "@/validations/validation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 
 const LoginForm = () => {
+  useResetInfoOnMount();
   const { info, loading } = useSelector(selectAuthState);
   const dispatch = useDispatch<AppDispatch>();
   const [password, setPassword] = useState<boolean>(true);
@@ -38,10 +42,11 @@ const LoginForm = () => {
   };
 
   useEffect(() => {
-    return () => {
-      dispatch(resetInfo({}));
-    };
-  }, []);
+    if (info?.type === "success") {
+      console.log("toast should be emitted");
+      toastEmitter("success", info.message, dispatch);
+    }
+  }, [dispatch, info]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -110,6 +115,14 @@ const LoginForm = () => {
               errors.password && "outline-red-500 outline-2"
             )}
           />
+        </div>
+        <div className="flex justify-end mt-2">
+          <Link
+            href={"/account/reset-password"}
+            className="text-primary text-sm font-bold hover:underline"
+          >
+            Forgot Password ?
+          </Link>
         </div>
       </div>
 

@@ -14,16 +14,20 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import LogoutButton from "../auth/logout/LogoutButton";
+import { usePathname } from "next/navigation";
 
 const navigation = [
-  { name: "Home", href: "/", current: true },
-  { name: "Documentation", href: "/documentation", current: false },
-  { name: "Protected Route", href: "/protected", current: false },
+  { name: "Home", href: "/" },
+  { name: "Documentation", href: "/documentation" },
+  { name: "Protected Route", href: "/protected" },
 ];
 const userNavigation = [{ name: "Your Profile", href: "/account/profile" }];
 
 const Navbar = () => {
   const { is_auth, user } = useSelector(selectAuthState);
+  const pathname = usePathname();
+  const current = pathname;
+
   return (
     <Disclosure as="nav" className="bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -38,9 +42,8 @@ const Navbar = () => {
                   <Link
                     key={item.name}
                     href={item.href}
-                    aria-current={item.current ? "page" : undefined}
                     className={classNames(
-                      item.current
+                      current == item.href
                         ? "bg-primary text-white"
                         : "text-foreground-muted hover:bg-primary/50 hover:text-white",
                       "rounded-md px-3 py-2 text-sm font-medium"
@@ -132,11 +135,10 @@ const Navbar = () => {
               key={item.name}
               as="a"
               href={item.href}
-              aria-current={item.current ? "page" : undefined}
               className={classNames(
-                item.current
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                current === item.href
+                  ? "bg-primary text-foreground"
+                  : "text-foreground hover:bg-primary/25",
                 "block rounded-md px-3 py-2 text-base font-medium"
               )}
             >

@@ -114,6 +114,43 @@ export const validateLogin = [
 ];
 
 export const validatePasswordChange = [
+  body("old_password")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter your old password")
+    .bail()
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long")
+    .bail()
+    .isLength({ max: 50 })
+    .withMessage("Password must be atmost 50 characters long")
+    .bail(),
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("Please enter your password")
+    .bail()
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long")
+    .bail()
+    .isLength({ max: 50 })
+    .withMessage("Password must be atmost 50 characters long")
+    .bail(),
+
+  body("password_confirmation")
+    .trim()
+    .notEmpty()
+    .withMessage("Please confirm the password")
+    .bail()
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error("Password confirmation does not match password");
+      }
+      return true;
+    }),
+];
+
+export const validatePasswordReset = [
   body("password")
     .trim()
     .notEmpty()

@@ -1,9 +1,11 @@
 import transporter from "../config/emailTransporter";
 import { env } from "../env";
+import { OTPGenerator } from "./OTPGenerator";
 
 const OTPSender = async (email: string, name: string) => {
-  const otp = Math.floor(1000 + Math.random() * 9999);
-  const frontendRedirector = env.FRONTEND_HOST + "/account/verify-email";
+  const otp = OTPGenerator(4);
+  const frontendRedirector =
+    env.FRONTEND_HOST + "/account/verify?email=" + email;
   await transporter.sendMail({
     from: env.EMAIL_FROM,
     to: email,

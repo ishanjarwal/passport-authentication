@@ -1,6 +1,11 @@
 "use client";
 import { RootState } from "@/redux/store";
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  Action,
+  createAsyncThunk,
+  createSlice,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 import {
   changePasswordAPI,
   loginUserAPI,
@@ -8,11 +13,14 @@ import {
   registerUserAPI,
   resendOTPAPI,
   resetPasswordAPI,
+  resetPasswordLinkAPI,
   updateUserAPI,
   userProfileAPI,
   verifyUserAPI,
 } from "./authAPI";
-import { InfoTypeValues } from "./types";
+import { ErrorPayload, InfoTypeValues } from "./types";
+import axios from "axios";
+import reduxThunkErrorPaylod from "@/utils/reduxThunkErrorPaylod";
 
 interface User {
   id?: string;
@@ -51,7 +59,7 @@ export const registerUser = createAsyncThunk(
       const response = await registerUserAPI(data);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error);
+      return rejectWithValue(reduxThunkErrorPaylod(error));
     }
   }
 );
@@ -63,7 +71,7 @@ export const verifyUser = createAsyncThunk(
       const response = await verifyUserAPI(data);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error);
+      return rejectWithValue(reduxThunkErrorPaylod(error));
     }
   }
 );
@@ -75,7 +83,7 @@ export const resendOTP = createAsyncThunk(
       const response = await resendOTPAPI(data);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error);
+      return rejectWithValue(reduxThunkErrorPaylod(error));
     }
   }
 );
@@ -87,10 +95,11 @@ export const loginUser = createAsyncThunk(
       const response = await loginUserAPI(data);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error);
+      return rejectWithValue(reduxThunkErrorPaylod(error));
     }
   }
 );
+
 export const userProfile = createAsyncThunk(
   "auth/user-profile",
   async (_, { rejectWithValue }) => {
@@ -98,7 +107,7 @@ export const userProfile = createAsyncThunk(
       const response = await userProfileAPI();
       return response;
     } catch (error: any) {
-      return rejectWithValue(error);
+      return rejectWithValue(reduxThunkErrorPaylod(error));
     }
   }
 );
@@ -110,7 +119,7 @@ export const logoutUser = createAsyncThunk(
       const response = await logoutUserAPI();
       return response;
     } catch (error: any) {
-      return rejectWithValue(error);
+      return rejectWithValue(reduxThunkErrorPaylod(error));
     }
   }
 );
@@ -118,14 +127,30 @@ export const logoutUser = createAsyncThunk(
 export const changePassword = createAsyncThunk(
   "auth/change-password",
   async (
-    data: { password: string; password_confirmation: string },
+    data: {
+      old_password: string;
+      password: string;
+      password_confirmation: string;
+    },
     { rejectWithValue }
   ) => {
     try {
       const response = await changePasswordAPI(data);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error);
+      return rejectWithValue(reduxThunkErrorPaylod(error));
+    }
+  }
+);
+
+export const resetPasswordLink = createAsyncThunk(
+  "auth/reset-password-link",
+  async (data: { email: string }, { rejectWithValue }) => {
+    try {
+      const response = await resetPasswordLinkAPI(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(reduxThunkErrorPaylod(error));
     }
   }
 );
@@ -140,7 +165,7 @@ export const resetPassword = createAsyncThunk(
       const response = await resetPasswordAPI(data);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error);
+      return rejectWithValue(reduxThunkErrorPaylod(error));
     }
   }
 );
@@ -152,7 +177,7 @@ export const updateUser = createAsyncThunk(
       const response = await updateUserAPI(data);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error);
+      return rejectWithValue(reduxThunkErrorPaylod(error));
     }
   }
 );
@@ -170,7 +195,7 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(registerUser.pending, (state, action: any) => {
+      .addCase(registerUser.pending, (state, action) => {
         state.loading = true;
         state.info = null;
       })
@@ -187,11 +212,8 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (state, action: any) => {
         state.loading = false;
         state.info = {
-          // type: action.payload?.response.data?.status || "error",
-          type: "error",
-          message:
-            action.payload?.response.data?.message ||
-            "Something went wrong, registration unsuccessful",
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
         };
       })
       .addCase(verifyUser.pending, (state, action: any) => {
@@ -204,15 +226,13 @@ const authSlice = createSlice({
           type: "success",
           message: action.payload?.message || "Verification successful",
         };
+        state.initialized = false;
       })
       .addCase(verifyUser.rejected, (state, action: any) => {
         state.loading = false;
         state.info = {
-          // type: action.payload?.response.data?.status || "error",
-          type: "error",
-          message:
-            action.payload?.response.data?.message ||
-            "Something went wrong, verification unsuccessful",
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
         };
       })
       .addCase(resendOTP.pending, (state, action: any) => {
@@ -229,11 +249,8 @@ const authSlice = createSlice({
       .addCase(resendOTP.rejected, (state, action: any) => {
         state.loading = false;
         state.info = {
-          // type: action.payload?.response.data?.status || "error",
-          type: "error",
-          message:
-            action.payload?.response.data?.message ||
-            "Something went wrong, try again later",
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
         };
       })
       .addCase(loginUser.pending, (state, action: any) => {
@@ -252,11 +269,8 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action: any) => {
         state.loading = false;
         state.info = {
-          // type: action.payload?.response.data?.status || "error",
-          type: "error",
-          message:
-            action.payload?.response.data?.message ||
-            "Something went wrong, try again later",
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
         };
       })
       .addCase(userProfile.pending, (state, action: any) => {
@@ -270,8 +284,8 @@ const authSlice = createSlice({
         state.initialized = true;
         state.is_auth = true;
         state.info = {
-          type: "success",
-          message: action.payload?.message || "fetched user",
+          type: "neutral",
+          message: "",
         };
         state.user = {
           name: action.payload.body.name,
@@ -282,15 +296,12 @@ const authSlice = createSlice({
       })
       .addCase(userProfile.rejected, (state, action: any) => {
         state.loading = false;
+        state.info = {
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
+        };
         state.initialized = true;
         state.is_auth = false;
-        state.info = {
-          // type: action.payload?.response.data?.status || "error",
-          type: "error",
-          message:
-            action.payload?.response.data?.message ||
-            "Something went wrong, try again later",
-        };
       })
       .addCase(logoutUser.pending, (state, action: any) => {
         state.loading = true;
@@ -298,7 +309,6 @@ const authSlice = createSlice({
       })
       .addCase(logoutUser.fulfilled, (state, action: any) => {
         state.loading = false;
-        state.initialized = false;
         state.is_auth = false;
         state.info = {
           type: "success",
@@ -309,10 +319,8 @@ const authSlice = createSlice({
       .addCase(logoutUser.rejected, (state, action: any) => {
         state.loading = false;
         state.info = {
-          // type: action.payload?.response.data?.status || "error",
-          type: "error",
-          message:
-            action.payload?.response.data?.message || "Something went wrong",
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
         };
       })
       .addCase(changePassword.pending, (state, action: any) => {
@@ -329,10 +337,27 @@ const authSlice = createSlice({
       .addCase(changePassword.rejected, (state, action: any) => {
         state.loading = false;
         state.info = {
-          // type: action.payload?.response.data?.status || "error",
-          type: "error",
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
+        };
+      })
+      .addCase(resetPasswordLink.pending, (state, action: any) => {
+        state.loading = true;
+        state.info = null;
+      })
+      .addCase(resetPasswordLink.fulfilled, (state, action: any) => {
+        state.loading = false;
+        state.info = {
+          type: "success",
           message:
-            action.payload?.response.data?.message || "Something went wrong",
+            action.payload?.message || "Password reset link sent to email",
+        };
+      })
+      .addCase(resetPasswordLink.rejected, (state, action: any) => {
+        state.loading = false;
+        state.info = {
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
         };
       })
       .addCase(resetPassword.pending, (state, action: any) => {
@@ -349,10 +374,8 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action: any) => {
         state.loading = false;
         state.info = {
-          // type: action.payload?.response.data?.status || "error",
-          type: "error",
-          message:
-            action.payload?.response.data?.message || "Something went wrong",
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
         };
       })
       .addCase(updateUser.pending, (state, action: any) => {
@@ -361,19 +384,17 @@ const authSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action: any) => {
         state.loading = false;
-        state.initialized = false;
         state.info = {
           type: "success",
           message: action.payload?.message || "details updated",
         };
+        state.user = action.payload.body;
       })
       .addCase(updateUser.rejected, (state, action: any) => {
         state.loading = false;
         state.info = {
-          // type: action.payload?.response.data?.status || "error",
-          type: "error",
-          message:
-            action.payload?.response.data?.message || "Something went wrong",
+          type: action.payload?.status || "error",
+          message: action.payload?.message || "Something went wrong",
         };
       });
   },

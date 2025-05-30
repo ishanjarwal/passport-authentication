@@ -96,9 +96,20 @@ export const verifyEmail = async (req: Request, res: Response) => {
     await existingUser.save();
     await VerificationModel.deleteMany({ userId: existingUser._id });
 
+    const { accessToken, accessTokenExpiry, refreshToken, refreshTokenExpiry } =
+      await generateTokens(existingUser);
+
+    // set the cookies
+    setAuthCookies(res, {
+      accessToken,
+      refreshToken,
+      accessTokenExpiry,
+      refreshTokenExpiry,
+    });
+
     res
       .status(200)
-      .json({ status: "success", message: "Account verified successfully" });
+      .json({ status: "success", message: "Account verified and Logged In" });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -207,7 +218,18 @@ export const changeUserPassword = async (req: Request, res: Response) => {
     if (!user) {
       throw new Error();
     }
-    const { password } = req.body;
+    const existing = await UserModel.findById(user.id);
+    if (!existing) {
+      res.status(400).json({ status: "fail", message: "Unauthorized access" });
+      return;
+    }
+    const { old_password, password } = req.body;
+    const compare = await bcrypt.compare(old_password, existing.password);
+    if (!compare) {
+      res.status(400).json({ status: "fail", message: "Wrong old password" });
+      return;
+    }
+
     const salt = await bcrypt.genSalt(Number(env.SALT_ROUNDS));
     const newPasswordHash = await bcrypt.hash(password, salt);
     await UserModel.findByIdAndUpdate(user._id, {
@@ -406,6 +428,7 @@ export const updateUser = async (req: Request, res: Response) => {
     res.status(200).json({
       status: "success",
       message: "User updated successfully",
+      body: updatedUser,
     });
   } catch (error) {
     console.error(error);

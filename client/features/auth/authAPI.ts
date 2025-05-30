@@ -23,7 +23,11 @@ export async function verifyUserAPI(data: { email: string; otp: string }) {
     try {
       const url = `${env.NEXT_PUBLIC_BASE_URL}/user/verify-email`;
       const { email, otp } = data;
-      const response = await axios.post(url, { email, otp });
+      const response = await axios.post(
+        url,
+        { email, otp },
+        { withCredentials: true }
+      );
       resolve(response.data);
     } catch (err) {
       reject(err);
@@ -103,16 +107,17 @@ export async function updateUserAPI(data: { name: string; bio: string }) {
 }
 
 export async function changePasswordAPI(data: {
+  old_password: string;
   password: string;
   password_confirmation: string;
 }) {
   return new Promise(async (resolve, reject) => {
     try {
       const url = `${env.NEXT_PUBLIC_BASE_URL}/user/change-password`;
-      const { password, password_confirmation } = data;
+      const { password, password_confirmation, old_password } = data;
       const response = await axios.post(
         url,
-        { password, password_confirmation },
+        { old_password, password, password_confirmation },
         { withCredentials: true }
       );
       resolve(response.data);
@@ -134,6 +139,23 @@ export async function resetPasswordAPI(data: {
       const response = await axios.post(
         url,
         { password, password_confirmation },
+        { withCredentials: true }
+      );
+      resolve(response.data);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+export async function resetPasswordLinkAPI(data: { email: string }) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { email } = data;
+      const url = `${env.NEXT_PUBLIC_BASE_URL}/user/reset-password`;
+      const response = await axios.post(
+        url,
+        { email },
         { withCredentials: true }
       );
       resolve(response.data);
