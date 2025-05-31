@@ -80,6 +80,10 @@ JWT_PASSWORD_RESET_SECRET=
 # Application environment (development | production)
 ENVIRONMENT=development
 
+# Google OAuth variables from cloud console
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
 # /client
 NEXT_PUBLIC_BASE_URL=http://localhost:8080/api/v1
 `}
