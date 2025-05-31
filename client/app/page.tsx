@@ -1,4 +1,5 @@
 import Navbar from "@/components/navbar/Navbar";
+import Link from "next/link";
 
 const Home = () => {
   return (
@@ -91,6 +92,13 @@ const Home = () => {
               <h2 className="text-2xl font-semibold mb-3">📚 Documentation</h2>
               <p className="text-foreground-muted">
                 You can find the full documentation and setup guide on the{" "}
+                <Link
+                  href="/documentation"
+                  className="text-primary underline hover:opacity-80"
+                >
+                  Documentation
+                </Link>{" "}
+                and the github repo at :{" "}
                 <a
                   href="https://github.com/ishanjarwal/passport-authentication"
                   className="text-primary underline hover:opacity-80"

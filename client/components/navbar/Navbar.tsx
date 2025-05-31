@@ -182,7 +182,7 @@ const Navbar = () => {
             </div>
           </div>
         ) : (
-          <div className="flex items-center space-x-2 px-4">
+          <div className="flex items-center space-x-2 p-4">
             <DisclosureButton>
               <Link
                 href={"/account/register"}
