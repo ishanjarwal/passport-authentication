@@ -3,7 +3,8 @@ export type InfoTypeValues =
   | "warning"
   | "error"
   | "success"
-  | "neutral";
+  | "neutral"
+  | "fail";
 
 export interface ErrorPayload {
   status: InfoTypeValues;

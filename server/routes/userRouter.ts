@@ -11,6 +11,10 @@ import {
   userProfile,
   verifyEmail,
 } from "../controllers/User";
+import accessTokenAutoRefresh from "../middlewares/accessTokenAutoRefresh";
+import passportAuthenticate from "../middlewares/passportAuthenticate";
+import { rateLimiter } from "../middlewares/rateLimiter";
+import { handleValidation } from "../middlewares/validationHandler";
 import {
   validateEmail,
   validateEmailVerification,
@@ -20,10 +24,6 @@ import {
   validateUpdateUser,
   validateUser,
 } from "../validators/userValidator";
-import { handleValidation } from "../middlewares/validationHandler";
-import accessTokenAutoRefresh from "../middlewares/accessTokenAutoRefresh";
-import passportAuthenticate from "../middlewares/passportAuthenticate";
-import { rateLimiter } from "../middlewares/rateLimiter";
 
 const userRouter = express.Router();
 

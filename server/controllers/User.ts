@@ -35,6 +35,7 @@ export const createUser = async (req: Request, res: Response) => {
       name,
       email,
       password: hashedPassword,
+      login_provider: null,
     }).save();
 
     const otp = await OTPSender(

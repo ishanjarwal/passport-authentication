@@ -1,11 +1,7 @@
 "use client";
 import { RootState } from "@/redux/store";
-import {
-  Action,
-  createAsyncThunk,
-  createSlice,
-  PayloadAction,
-} from "@reduxjs/toolkit";
+import reduxThunkErrorPaylod from "@/utils/reduxThunkErrorPaylod";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   changePasswordAPI,
   loginUserAPI,
@@ -18,15 +14,14 @@ import {
   userProfileAPI,
   verifyUserAPI,
 } from "./authAPI";
-import { ErrorPayload, InfoTypeValues } from "./types";
-import axios from "axios";
-import reduxThunkErrorPaylod from "@/utils/reduxThunkErrorPaylod";
+import { InfoTypeValues } from "./types";
 
 interface User {
   id?: string;
   name?: string;
   email: string;
   bio?: string;
+  login_provider?: string | null;
   // roles: string[]
 }
 
@@ -292,6 +287,7 @@ const authSlice = createSlice({
           email: action.payload.body.email,
           id: action.payload.body.id,
           bio: action.payload.body.bio,
+          login_provider: action.payload.body.login_provider,
         };
       })
       .addCase(userProfile.rejected, (state, action: any) => {

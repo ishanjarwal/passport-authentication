@@ -6,6 +6,8 @@ import { env } from "../env";
 import userRouter from "../routes/userRouter";
 import passport from "passport";
 import "../config/passport-strategy";
+import "../config/passport-google-strategy";
+import setAuthCookies from "../utils/setAuthCookies";
 
 const port = env.PORT;
 
@@ -38,6 +40,41 @@ app.use(passport.initialize());
 
 // user routes
 app.use("/api/v1/user", userRouter);
+
+// google auth
+app.get(
+  "/api/v1/auth/google",
+  passport.authenticate("google", {
+    session: false,
+    scope: ["profile", "email"],
+  })
+);
+
+app.get(
+  "/api/v1/auth/google/callback",
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "/login",
+  }),
+  (req, res) => {
+    const {
+      user,
+      accessToken,
+      accessTokenExpiry,
+      refreshToken,
+      refreshTokenExpiry,
+    } = req.user as any;
+
+    setAuthCookies(res, {
+      accessToken,
+      accessTokenExpiry,
+      refreshToken,
+      refreshTokenExpiry,
+    });
+
+    res.redirect(`${env.FRONTEND_HOST}/account/profile`);
+  }
+);
 
 app.listen(port, () => {
   console.log(`backend running on port : ${port}`);

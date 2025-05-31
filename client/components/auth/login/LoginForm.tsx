@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import GoogleLoginButton from "../google/GoogleLoginButton";
 
 const LoginForm = () => {
   useResetInfoOnMount();
@@ -43,7 +44,6 @@ const LoginForm = () => {
 
   useEffect(() => {
     if (info?.type === "success") {
-      console.log("toast should be emitted");
       toastEmitter("success", info.message, dispatch);
     }
   }, [dispatch, info]);
@@ -134,6 +134,9 @@ const LoginForm = () => {
         >
           {!loading ? "Login" : <Loader2 className="animate-spin" />}
         </button>
+      </div>
+      <div className="mt-2">
+        <GoogleLoginButton />
       </div>
     </form>
   );

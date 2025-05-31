@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import ChangePasswordForm from "./ChangePasswordForm";
 import { useResetInfoOnMount } from "@/hooks/useResetInfoOnMount";
+import { GoogleSVG } from "../auth/google/GoogleLoginButton";
 
 const ProfileForm = () => {
   useResetInfoOnMount();
@@ -141,6 +142,22 @@ const ProfileForm = () => {
                 </div>
                 <p className="mt-3 text-sm/6 text-gray-600">
                   Write a few sentences about yourself.
+                </p>
+              </div>
+
+              <div className="col-span-full">
+                <label className="block text-sm/6 font-medium text-foreground">
+                  Login Provider
+                </label>
+                <p className="mt-3 text-foreground flex">
+                  {user?.login_provider === "google" ? (
+                    <span className="flex justify-start items-center space-x-2 py-2 px-4 rounded-md bg-background-muted">
+                      <span className="w-6">{GoogleSVG}</span>
+                      <span>Google</span>
+                    </span>
+                  ) : (
+                    "Email"
+                  )}
                 </p>
               </div>
             </div>

@@ -12,6 +12,7 @@ import { RegisterSchema, RegisterValues } from "@/validations/validation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -37,10 +38,23 @@ const RegisterForm = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const { info, loading, user } = useSelector(selectAuthState);
+  const router = useRouter();
 
   const onSubmit = (data: RegisterValues) => {
     dispatch(registerUser(data));
   };
+
+  useEffect(() => {
+    let timeout: any;
+    if (info?.type === "success") {
+      timeout = setTimeout(() => {
+        router.push(`/account/verify?email=${user?.email}`);
+      }, 1500);
+    }
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [info]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -140,7 +154,7 @@ const RegisterForm = () => {
       <div>
         <button
           type="submit"
-          className="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:hover:bg-primary/50 disabled:bg-primary/50"
+          className="flex w-full cursor-pointer justify-center rounded-md bg-primary px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:hover:bg-primary/50 disabled:bg-primary/50"
           disabled={!isValid || loading}
         >
           {!loading ? "Register" : <Loader2 className="animate-spin" />}
