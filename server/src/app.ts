@@ -1,13 +1,13 @@
 import express from "express";
 import cors, { CorsOptions } from "cors";
 import cookieParser from "cookie-parser";
-import connectDB from "../config/dbconnect";
-import { env } from "../env";
-import userRouter from "../routes/userRouter";
+import connectDB from "./config/dbconnect";
+import { env } from "./env";
+import userRouter from "./routes/userRouter";
 import passport from "passport";
-import "../config/passport-strategy";
-import "../config/passport-google-strategy";
-import setAuthCookies from "../utils/setAuthCookies";
+import "./config/passport-strategy";
+import "./config/passport-google-strategy";
+import setAuthCookies from "./utils/setAuthCookies";
 
 const port = env.PORT;
 
