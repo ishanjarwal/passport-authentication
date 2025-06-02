@@ -18,7 +18,7 @@ const setAuthCookies = (res: Response, tokens: TokenValues) => {
     httpOnly: true,
     secure: env.ENVIRONMENT === "production", // Set to true if using HTTPS
     maxAge: accessTokenMaxAge,
-    // sameSite: 'strict', // Adjust according to your requirements
+    sameSite: "none", // Adjust according to your requirements
   });
 
   // Set Cookie for Refresh Token
@@ -26,7 +26,7 @@ const setAuthCookies = (res: Response, tokens: TokenValues) => {
     httpOnly: true,
     secure: env.ENVIRONMENT === "production", // Set to true if using HTTPS
     maxAge: refreshTokenmaxAge,
-    // sameSite: 'strict', // Adjust according to your requirements
+    sameSite: "none", // Adjust according to your requirements
   });
 };
 
