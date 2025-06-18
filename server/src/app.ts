@@ -13,6 +13,8 @@ const port = env.PORT;
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 // enable cors
 const corsWhitelist: string[] = [env.FRONTEND_HOST];
 const corsOptions: CorsOptions = {

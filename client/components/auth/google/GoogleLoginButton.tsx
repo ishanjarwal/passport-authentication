@@ -3,24 +3,8 @@ import React from "react";
 
 const GoogleLoginButton = () => {
   const handleLogin = () => {
-    const width = 500;
-    const height = 600;
-
-    const left = window.screenX + (window.innerWidth - width) / 2;
-    const top = window.screenY + (window.innerHeight - height) / 2;
-
-    const loginWindow = window.open(
-      `${env.NEXT_PUBLIC_BASE_URL}/auth/google`,
-      "GoogleLoginPopup",
-      `width=${width},height=${height},top=${top},left=${left},resizable=no,scrollbars=yes,status=no`
-    );
-
-    // Optional: focus the popup
-    if (loginWindow) {
-      loginWindow.focus();
-    }
+    window.location.href = `${env.NEXT_PUBLIC_BASE_URL}/auth/google`;
   };
-
   return (
     <button
       type="button"
