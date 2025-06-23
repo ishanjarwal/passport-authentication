@@ -34,11 +34,11 @@ const generateTokens = async (user: UserValues): Promise<TokenValues> => {
     );
 
     // remove the exising refreshtoken in db and add new one
-    await RefreshTokenModel.deleteMany({ userId: user.id });
-    await new RefreshTokenModel({
-      userId: user.id,
-      token: refreshToken,
-    }).save();
+    await RefreshTokenModel.findOneAndUpdate(
+      { userId: user.id }, // Match by userId
+      { token: refreshToken }, // Update with new token
+      { upsert: true, new: true } // Create if not exists
+    );
 
     return { accessToken, accessTokenExpiry, refreshToken, refreshTokenExpiry };
   } catch (error) {

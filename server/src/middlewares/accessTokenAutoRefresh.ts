@@ -14,6 +14,7 @@ const accessTokenAutoRefresh = async (
     //  if found + not expired then add the access token to the Authorization header
     if (accessToken && !isTokenExpired(accessToken)) {
       req.headers["authorization"] = `Bearer ${accessToken}`;
+      next();
     }
 
     // If refresh token is also missing, throw an error
@@ -22,7 +23,7 @@ const accessTokenAutoRefresh = async (
       throw new Error("unauthorized access - refresh token not found");
     }
 
-    // if access token not found or expired create new tokens and set in cookies + auth header
+    //if refreshToken is found but accessToken not found or expired create new tokens and set in cookies + auth header
     if (!accessToken || isTokenExpired(accessToken)) {
       const {
         newAccessToken,
