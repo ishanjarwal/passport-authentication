@@ -14,7 +14,6 @@ const accessTokenAutoRefresh = async (
     //  if found + not expired then add the access token to the Authorization header
     if (accessToken && !isTokenExpired(accessToken)) {
       req.headers["authorization"] = `Bearer ${accessToken}`;
-      next();
     }
 
     // If refresh token is also missing, throw an error
@@ -45,7 +44,7 @@ const accessTokenAutoRefresh = async (
     }
     next();
   } catch (error: Error | any) {
-    console.error(error.message);
+    console.error(error);
     res.status(400).json({
       status: "error",
       message: error.message || "Something went wrong",
